@@ -1,73 +1,135 @@
-# React + TypeScript + Vite
+# Sistema de Vendas AI - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este é o frontend do sistema de vendas integrado com a API do sistema legado AngularJS.
 
-Currently, two official plugins are available:
+## 🚀 Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Autenticação completa** integrada com os endpoints do sistema antigo
+- **Primeiro acesso** com criação de senha
+- **Gerenciamento de estado** reativo para autenticação
+- **Interface moderna** com PrimeReact
+- **Responsivo** e otimizado para mobile
 
-## React Compiler
+## 🔧 Configuração
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Endpoints da API
 
-## Expanding the ESLint configuration
+O sistema está configurado para usar os mesmos endpoints do sistema AngularJS:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Desenvolvimento**: `//localhost:5000/api/`
+- **Homologação**: `//apibookinghmg.zoss.com.br/api/`
+- **Produção**: `https://apibooking.zoss.com.br/api/`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Endpoints utilizados
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- `POST /login/efetuar` - Login do usuário
+- `GET /login/ehPrimeiroAcesso/{login}` - Verificar primeiro acesso
+- `POST /usuarios/cadastrarPrimeiraSenha` - Criar senha no primeiro acesso
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 📦 Instalação
+
+```bash
+# Instalar dependências
+npm install
+
+# Executar em desenvolvimento
+npm run dev
+
+# Build para produção
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🏗️ Estrutura do Projeto
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── components/
+│   ├── LoginForm.tsx      # Formulário de login
+│   ├── LoginForm.scss     # Estilos do login
+│   ├── Dashboard.tsx      # Dashboard após login
+│   └── Dashboard.scss     # Estilos do dashboard
+├── services/
+│   ├── api.ts            # Serviço de API
+│   └── auth.ts           # Serviço de autenticação
+├── hooks/
+│   └── useAuth.ts        # Hook personalizado para auth
+├── config/
+│   └── environment.ts    # Configurações de ambiente
+└── App.tsx              # Componente principal
+```
+
+## 🔐 Autenticação
+
+### Login Normal
+1. Usuário digita login e senha
+2. Sistema verifica credenciais na API
+3. Se válido, usuário é redirecionado para o dashboard
+
+### Primeiro Acesso
+1. Usuário digita login
+2. Sistema verifica se é primeiro acesso
+3. Se sim, exibe formulário para criar senha
+4. Após criar senha, faz login automaticamente
+
+## 🎨 Componentes
+
+### LoginForm
+- Formulário de login com validação
+- Suporte a primeiro acesso
+- Estados de loading e erro
+- Interface responsiva
+
+### Dashboard
+- Exibe informações do usuário logado
+- Botão de logout
+- Interface moderna e limpa
+
+## 🔧 Serviços
+
+### ApiService
+- Cliente HTTP para comunicação com a API
+- Headers de autenticação automáticos
+- Tratamento de erros centralizado
+
+### AuthService
+- Gerenciamento de estado de autenticação
+- Persistência no localStorage
+- Sistema de notificações reativas
+
+### useAuth Hook
+- Hook personalizado para facilitar uso da autenticação
+- Estado reativo
+- Métodos de login/logout
+
+## 🌐 Configuração de Ambiente
+
+O sistema detecta automaticamente o ambiente baseado na URL:
+
+- **localhost** → Desenvolvimento
+- **hmg, 127, fera, crmhmg, carrentalzchat** → Homologação  
+- **chat, local, zoss, crm, zoss-movida** → Produção
+
+## 📱 Responsividade
+
+- Design mobile-first
+- Breakpoints otimizados
+- Componentes adaptáveis
+
+## 🚀 Deploy
+
+O sistema está pronto para deploy em qualquer ambiente que suporte aplicações React/Vite.
+
+### Variáveis de Ambiente
+
+Não são necessárias variáveis de ambiente, pois a configuração é automática baseada na URL.
+
+## 🔒 Segurança
+
+- Tokens de autenticação seguros
+- Headers de origem e token configurados
+- Validação de entrada
+- Sanitização de dados
+
+## 📞 Suporte
+
+Para dúvidas ou problemas, consulte a documentação do sistema legado ou entre em contato com a equipe de desenvolvimento.
