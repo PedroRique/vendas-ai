@@ -1,6 +1,6 @@
 // Cores principais
-$primary-color: #667eea;
-$secondary-color: #764ba2;
+$primary-color: #222;
+$secondary-color: #000;
 $text-primary: #333;
 $text-secondary: #666;
 $white: #ffffff;
@@ -17,7 +17,7 @@ $warning-color: #f39c12;
 
 // Cores de link
 $link-color: $primary-color;
-$link-hover-color: darken($primary-color, 10%);
+$link-hover-color: #5a6fd8;
 
 // Sombras
 $card-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
