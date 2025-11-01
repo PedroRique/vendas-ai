@@ -1,4 +1,4 @@
-import { apiService, type Partner, type LocationsResponse, type AvailableCarsResponse, type VerifyAvailableCarsRequest } from './api';
+import { apiService, type Partner, type LocationsResponse, type AvailableCarsResponse, type VerifyAvailableCarsRequest, type GetLocationsRequest } from './api';
 
 // Re-export Partner for convenience
 export type { Partner } from './api';
@@ -42,7 +42,7 @@ export class LocalizationService {
    */
   async getLocations(
     search: string,
-    codAgencia: number,
+    codAgencia: number | null | undefined,
     parceria?: string
   ): Promise<LocationsResponse['dados']> {
     try {
@@ -55,11 +55,28 @@ export class LocalizationService {
         };
       }
 
-      const response = await apiService.getLocations({
+      // Preparar dados da requisição
+      // O API requer codAgencia sempre presente na requisição
+      const requestData: GetLocationsRequest = {
         filtro: search,
-        codAgencia,
-        parceria,
-      });
+      };
+
+      // Sempre incluir codAgencia (API requer este campo)
+      // Se não disponível, usar 100 como padrão (mesmo comportamento do sistema antigo para "Vendas")
+      if (codAgencia !== null && codAgencia !== undefined && codAgencia > 0) {
+        requestData.codAgencia = codAgencia;
+      } else {
+        // Usar 100 como padrão quando não houver código válido do usuário
+        // Baseado no sistema antigo que usa codigoAgencia: 100 para "Vendas"
+        requestData.codAgencia = 100;
+      }
+
+      // Incluir parceria se fornecida
+      if (parceria) {
+        requestData.parceria = parceria;
+      }
+
+      const response = await apiService.getLocations(requestData);
 
       return response.dados;
     } catch (error) {

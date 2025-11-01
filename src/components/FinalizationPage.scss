@@ -1,0 +1,110 @@
+.finalization-page {
+  padding: 2rem;
+
+  &.sidebar-container {
+    margin-right: 350px;
+  }
+
+  .finalization-container {
+    display: flex;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .order-info {
+      flex: 65;
+      min-width: 0;
+
+      .finalization-card {
+        .main-title {
+          font-size: 2rem;
+          font-weight: bold;
+          color: #333;
+          margin: 0 0 2rem 0;
+          text-align: center;
+        }
+
+        .order-box {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          margin: 2rem 0;
+          padding: 1.5rem;
+          background: #f5f5f5;
+          border-radius: 8px;
+
+          .desc {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 500;
+          }
+
+          .reservation-link {
+            text-decoration: none;
+            color: #007bff;
+            transition: color 0.2s;
+
+            &:hover {
+              color: #0056b3;
+            }
+
+            .number {
+              font-size: 1.5rem;
+              font-weight: bold;
+              color: #007bff;
+            }
+          }
+        }
+
+        .sms {
+          text-align: center;
+          color: #666;
+          margin: 2rem 0;
+          font-size: 1rem;
+        }
+
+        .footer {
+          display: flex;
+          justify-content: center;
+          gap: 1rem;
+          margin-top: 2rem;
+          padding-top: 2rem;
+          border-top: 1px solid #ddd;
+
+          button {
+            min-width: 150px;
+          }
+        }
+      }
+    }
+
+    .sidebar-box {
+      flex: 35;
+      min-width: 300px;
+
+      .sidebar-card {
+        .sidebar-content {
+          padding: 1rem;
+          min-height: 400px;
+          background: #f5f5f5;
+          border-radius: 8px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .finalization-page {
+    .finalization-container {
+      flex-direction: column;
+
+      .order-info,
+      .sidebar-box {
+        flex: 1;
+      }
+    }
+  }
+}
+

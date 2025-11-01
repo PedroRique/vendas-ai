@@ -60,7 +60,7 @@ interface UseLocalizationReturn {
 }
 
 export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn => {
-  const { user } = useAuth();
+  useAuth(); // Hook para manter o contexto, mas não precisamos do user aqui
   
   // Partners
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -102,7 +102,7 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
   const [retrieveHour, setRetrieveHour] = useState<Date>(
     dayjs(initDate).add(1, 'day').hour(10).minute(0).second(0).toDate()
   );
-  const [minGetCarDate, setMinGetCarDate] = useState<Date>(minDate);
+  const [minGetCarDate] = useState<Date>(minDate);
   const [minRetrieveDate, setMinRetrieveDate] = useState<Date>(
     dayjs(minDate).add(1, 'hour').toDate()
   );
@@ -198,7 +198,7 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
     setRetrieveWhere(place.nome);
   }, []);
 
-  const searchLocations = useCallback(async (search: string, forRetrieve: boolean = false) => {
+  const searchLocations = useCallback(async (search: string) => {
     if (search.length < 3) {
       setLocations({
         airports: [],

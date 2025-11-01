@@ -16,12 +16,14 @@ interface LocalizationFormProps {
   onSuccess?: (data: Record<string, unknown>) => void;
   onAbort?: () => void;
   agencyCode?: number;
+  protocolo?: string | null;
 }
 
 const LocalizationForm: React.FC<LocalizationFormProps> = ({
   onSuccess,
   onAbort,
   agencyCode = 0,
+  protocolo = null,
 }) => {
   const { user } = useAuth();
   const toast = React.useRef<Toast>(null);
@@ -73,7 +75,7 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
     // Status
     isLoading,
     isLoadingLocations,
-  } = useLocalization(agencyCode || (user && 'id_carrental' in user ? (user.id_carrental as number) : 0) || 0);
+  } = useLocalization(agencyCode || (user && 'id_carrental' in user ? (user.id_carrental as number) : 100) || 100);
 
   const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [couponError, setCouponError] = useState<string>('');
@@ -229,6 +231,18 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
       const dataHoraDevolucao = dayjs(retrieveDate)
         .format('YYYY-MM-DD') + 'T' + dayjs(retrieveHour).format('HH:mm:ss');
 
+      // Obter protocolo (obrigatório para a API)
+      const protocoloToUse = protocolo || (user && 'protocolo' in user ? (user.protocolo as string) : null);
+      
+      if (!protocoloToUse) {
+        toast.current?.show({ 
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Protocolo não encontrado. Por favor, recarregue a página.',
+        });
+        return;
+      }
+
       // Prepare request data
       const requestData = {
         codCupom: coupon || undefined,
@@ -237,13 +251,13 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
         devolverNoMesmoLocalRetirada: !showRetrieve,
         locaisDevolucao: finalRetrievePlace.lojas || [finalRetrievePlace.sigla || ''],
         locaisRetirada: getCarPlace.lojas || [getCarPlace.sigla || ''],
-        protocolo: (user && 'protocolo' in user ? (user.protocolo as string) : undefined),
+        protocolo: protocoloToUse,
         franquiaKM: selectedFranchiseKm || undefined,
         tarifas,
         parceria: selectedPartner || undefined,
       };
 
-      const agencyCodeToUse = agencyCode || (user && 'id_carrental' in user ? (user.id_carrental as number) : 0) || 0;
+      const agencyCodeToUse = agencyCode || (user && 'id_carrental' in user ? (user.id_carrental as number) : 100) || 100;
       
       const response = await localizationService.verifyAvailableCars(
         agencyCodeToUse,

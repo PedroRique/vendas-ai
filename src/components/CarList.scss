@@ -1,0 +1,36 @@
+.car-list {
+  flex: 1;
+
+  .car-list-title {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #333;
+
+    strong {
+      color: #007bff;
+      font-weight: 600;
+    }
+  }
+
+  .car-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .car-list-empty {
+    padding: 3rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+
+    p {
+      margin: 0;
+      color: #666;
+      font-size: 1rem;
+    }
+  }
+}
+

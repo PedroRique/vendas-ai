@@ -1,0 +1,84 @@
+.car-details-modal {
+  .modal-header {
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+  }
+
+  .period-details {
+    padding: 1.5rem 0;
+
+    .detail-item {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e0e0e0;
+
+      &:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      p {
+        margin: 0.5rem 0;
+        font-size: 1rem;
+        color: #333;
+        line-height: 1.6;
+
+        strong {
+          color: #000;
+          font-weight: 600;
+        }
+      }
+
+      .total-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #007bff;
+      }
+    }
+  }
+
+  .no-periods {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+
+    p {
+      margin: 0;
+      font-size: 1rem;
+    }
+  }
+
+  :deep(.p-tabview) {
+    .p-tabview-nav {
+      background: #f8f9fa;
+      border-radius: 4px 4px 0 0;
+
+      li {
+        .p-tabview-nav-link {
+          color: #666;
+          padding: 1rem 1.5rem;
+
+          &:hover {
+            background: #e9ecef;
+          }
+
+          &.p-highlight {
+            color: #007bff;
+            background: white;
+          }
+        }
+      }
+    }
+
+    .p-tabview-panels {
+      background: white;
+      padding: 1.5rem;
+    }
+  }
+}
+

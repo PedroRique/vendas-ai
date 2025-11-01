@@ -1,0 +1,141 @@
+.protections-page {
+  &.sidebar-container {
+    margin-right: 350px;
+  }
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  .protections-card {
+    width: 100%;
+    max-width: 900px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .protections-header {
+    padding: 1.5rem 2rem;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    margin: -1rem -1rem 2rem -1rem;
+
+    .main-title {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 300;
+    }
+  }
+
+  .protections-content {
+    padding: 0 1rem 1rem 1rem;
+
+    .protections-section {
+      margin-bottom: 2rem;
+
+      &.additional-section {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e0e0e0;
+
+        .section-title {
+          margin: 0 0 1.5rem 0;
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: #333;
+        }
+      }
+
+      .protections-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .empty-message {
+          text-align: center;
+          padding: 2rem;
+          color: #666;
+          font-size: 1.1rem;
+        }
+
+        .protection-item {
+          display: flex;
+          align-items: center;
+          padding: 1rem;
+          background: #fff;
+          border: 2px solid #e0e0e0;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+          cursor: pointer;
+
+          &:hover {
+            border-color: #4facfe;
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.2);
+          }
+
+          .protection-radio {
+            margin-right: 1rem;
+          }
+
+          .protection-label {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            width: 100%;
+
+            .protection-name {
+              flex: 1;
+              font-weight: 500;
+              color: #333;
+              font-size: 1rem;
+            }
+
+            .protection-tooltip {
+              color: #4facfe;
+              font-size: 1.1rem;
+              cursor: help;
+
+              &:hover {
+                color: #00f2fe;
+              }
+            }
+
+            .protection-price {
+              font-size: 1rem;
+              color: #4facfe;
+              font-weight: 600;
+              min-width: 120px;
+              text-align: right;
+
+              b {
+                color: inherit;
+              }
+            }
+          }
+
+          // Estilo quando selecionado
+          &.selected {
+            border-color: #4facfe;
+            background: #f0f8ff;
+            box-shadow: 0 2px 12px rgba(79, 172, 254, 0.3);
+          }
+        }
+      }
+    }
+
+    .protections-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid #e0e0e0;
+    }
+  }
+}
+

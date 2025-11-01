@@ -23,6 +23,95 @@ export interface CreatePasswordRequest {
   senha: string;
 }
 
+export interface StartAttendanceRequest {
+  codigoAgencia: number;
+  tokenAtendimento?: string;
+}
+
+export interface StartAttendanceResponse {
+  dados: number; // id_attendance (protocolo)
+}
+
+// Tipos para reserva (precisam estar antes da classe para evitar problemas de exportação)
+export interface BookingRequest {
+  dataHoraDevolucao: string;
+  dataHoraRetirada: string;
+  localRetirada: string;
+  localDevolucao: string;
+  ehMensal?: boolean;
+  dadosCliente: {
+    email: string;
+    prefixoNome: string;
+    nome: string;
+    sobrenome: string;
+    dddTelefone: string;
+    telefone: string;
+    dddCelular: string;
+    Celular: string;
+    tipoDocumento: number;
+    documento: string;
+  };
+  codigoAcriss?: string;
+  categoria?: string;
+  opcionais?: Array<Record<string, unknown>>;
+  protecoes?: Array<Record<string, unknown>>;
+  codigoPromocional?: string;
+  tarifas?: Array<Record<string, unknown>>;
+  rateQualifier?: string;
+  tokenCotacao?: string;
+  protocolo: string;
+  codigoReservaAgencia?: string;
+  [key: string]: unknown;
+}
+
+export interface BookingResponse {
+  dados: {
+    reserva: Record<string, unknown>;
+    totalbasicoReserva: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  protocolo: string;
+  [key: string]: unknown;
+}
+
+export interface QuotationRequest {
+  dataHoraDevolucao: string;
+  dataHoraRetirada: string;
+  localRetirada: string;
+  localDevolucao: string;
+  ehMensal?: boolean;
+  dadosCliente: {
+    email: string;
+    prefixoNome: string;
+    nome: string;
+    sobrenome: string;
+    dddTelefone: string;
+    telefone: string;
+    dddCelular: string;
+    Celular: string;
+    tipoDocumento: number;
+    documento: string;
+  };
+  codigoAcriss?: string;
+  categoria?: string;
+  opcionais?: Array<Record<string, unknown>>;
+  protecoes?: Array<Record<string, unknown>>;
+  codigoPromocional?: string;
+  codCupom?: string;
+  tarifas?: Array<Record<string, unknown>>;
+  rateQualifier?: string;
+  tokenCotacao?: string;
+  protocolo: string;
+  locaisRetirada?: string[];
+  locaisDevolucao?: string[];
+  [key: string]: unknown;
+}
+
+export interface QuotationResponse {
+  dados: unknown;
+  [key: string]: unknown;
+}
+
 // Classe principal da API
 class ApiService {
   private baseURL: string;
@@ -37,13 +126,15 @@ class ApiService {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
-    // Get token from auth service if available
+    // Get token and user info from auth service if available
     const authToken = localStorage.getItem('user');
     let userToken = null;
+    let userLogin = null;
     if (authToken) {
       try {
         const user = JSON.parse(authToken);
         userToken = user.token;
+        userLogin = user.login;
       } catch (e) {
         // Ignore parse errors
       }
@@ -58,6 +149,11 @@ class ApiService {
     // Add user token if available
     if (userToken) {
       defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+    }
+
+    // Add CD-Login header if user is logged in (como no sistema antigo)
+    if (userLogin) {
+      defaultHeaders['CD-Login'] = userLogin;
     }
 
     const config: RequestInit = {
@@ -105,6 +201,14 @@ class ApiService {
     });
   }
 
+  // Métodos de atendimento
+  async startAttendance(data: StartAttendanceRequest): Promise<StartAttendanceResponse> {
+    return this.request<StartAttendanceResponse>('atendimentos/iniciar', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Métodos de localização
   async getPartners(tipoTarifa: string = ''): Promise<PartnersResponse> {
     const endpoint = tipoTarifa ? `tarifas/${tipoTarifa}` : 'tarifas/';
@@ -126,6 +230,42 @@ class ApiService {
       body: JSON.stringify(data),
     });
   }
+
+  // Métodos de clientes
+  async findCustomer(documento: string): Promise<FindCustomerResponse> {
+    return this.request<FindCustomerResponse>(`clientes/${documento}`, {
+      method: 'GET',
+    });
+  }
+
+  async saveCustomer(data: SaveCustomerRequest): Promise<SaveCustomerResponse> {
+    return this.request<SaveCustomerResponse>('clientes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async editCustomer(clienteId: number, data: EditCustomerRequest): Promise<EditCustomerResponse> {
+    return this.request<EditCustomerResponse>(`clientes/${clienteId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Métodos de reserva
+  async booking(idCarrental: number, data: BookingRequest): Promise<BookingResponse> {
+    return this.request<BookingResponse>(`agencias/${idCarrental}/reservas`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async quotation(idCarrental: number, data: QuotationRequest): Promise<QuotationResponse> {
+    return this.request<QuotationResponse>(`agencias/${idCarrental}/lojas/veiculos`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // Tipos para localização
@@ -141,7 +281,7 @@ export interface PartnersResponse {
 
 export interface GetLocationsRequest {
   filtro: string;
-  codAgencia: number;
+  codAgencia?: number;
   parceria?: string;
 }
 
@@ -168,7 +308,7 @@ export interface VerifyAvailableCarsRequest {
   devolverNoMesmoLocalRetirada: boolean;
   locaisDevolucao: string[];
   locaisRetirada: string[];
-  protocolo?: string;
+  protocolo: string;
   franquiaKM?: Partner;
   tarifas: Partner[];
   parceria?: Partner;
@@ -183,6 +323,55 @@ export interface AvailableCarsResponse {
     [key: string]: any;
   };
 }
+
+// Tipos para clientes
+export interface FindCustomerResponse {
+  dados: {
+    clienteId: number;
+    nomeCompleto: string;
+    email: string;
+    telefone: string;
+    documento: string;
+    tipoDocumentoId: number;
+    [key: string]: unknown;
+  };
+}
+
+export interface SaveCustomerRequest {
+  nomeCompleto: string;
+  email: string;
+  telefone: string;
+  documento: string;
+  tipoDocumentoId: number;
+}
+
+export interface SaveCustomerResponse {
+  dados: {
+    clienteId: number;
+    [key: string]: unknown;
+  };
+}
+
+export interface EditCustomerRequest {
+  nomeCompleto: string;
+  email: string;
+  telefone: string;
+  documento: string;
+  tipoDocumentoId: number;
+}
+
+export interface EditCustomerResponse {
+  dados: unknown;
+}
+
+// Enum de tipos de documento (convertido para const para compatibilidade com erasableSyntaxOnly)
+export const DocumentTypesEnum = {
+  CPF: 1,
+  CNPJ: 2,
+  PASSAPORT: 3,
+} as const;
+
+export type DocumentTypesEnumValue = typeof DocumentTypesEnum[keyof typeof DocumentTypesEnum];
 
 export const apiService = new ApiService();
 export default apiService;
