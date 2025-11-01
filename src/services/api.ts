@@ -37,11 +37,28 @@ class ApiService {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
-    const defaultHeaders = {
+    // Get token from auth service if available
+    const authToken = localStorage.getItem('user');
+    let userToken = null;
+    if (authToken) {
+      try {
+        const user = JSON.parse(authToken);
+        userToken = user.token;
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+    
+    const defaultHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
       'Origin-Code': ORIGIN_CODE,
       'Token': TOKEN,
     };
+
+    // Add user token if available
+    if (userToken) {
+      defaultHeaders['Authorization'] = `Bearer ${userToken}`;
+    }
 
     const config: RequestInit = {
       ...options,
@@ -87,6 +104,84 @@ class ApiService {
       body: JSON.stringify(data),
     });
   }
+
+  // Métodos de localização
+  async getPartners(tipoTarifa: string = ''): Promise<PartnersResponse> {
+    const endpoint = tipoTarifa ? `tarifas/${tipoTarifa}` : 'tarifas/';
+    return this.request<PartnersResponse>(endpoint, {
+      method: 'GET',
+    });
+  }
+
+  async getLocations(data: GetLocationsRequest): Promise<LocationsResponse> {
+    return this.request<LocationsResponse>('localidades/obter', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async verifyAvailableCars(codigoAgencia: number, data: VerifyAvailableCarsRequest): Promise<AvailableCarsResponse> {
+    return this.request<AvailableCarsResponse>(`agencias/${codigoAgencia}/lojas/veiculos`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+}
+
+// Tipos para localização
+export interface Partner {
+  codigo: string;
+  descricao: string;
+  categoria: string;
+}
+
+export interface PartnersResponse {
+  dados: Partner[];
+}
+
+export interface GetLocationsRequest {
+  filtro: string;
+  codAgencia: number;
+  parceria?: string;
+}
+
+export interface Location {
+  nome: string;
+  sigla?: string;
+  lojas?: string[];
+  qtLojas: number;
+}
+
+export interface LocationsResponse {
+  dados: {
+    Aeroportos: Location[];
+    TodasLojas: Location[];
+    Cidades: Location[];
+    Bairro: Location[];
+  };
+}
+
+export interface VerifyAvailableCarsRequest {
+  codCupom?: string;
+  dataHoraDevolucao: string;
+  dataHoraRetirada: string;
+  devolverNoMesmoLocalRetirada: boolean;
+  locaisDevolucao: string[];
+  locaisRetirada: string[];
+  protocolo?: string;
+  franquiaKM?: Partner;
+  tarifas: Partner[];
+  parceria?: Partner;
+}
+
+export interface AvailableCarsResponse {
+  dados: {
+    filtroCupom?: {
+      valido: boolean;
+    };
+    veiculosDisponiveis: any[];
+    [key: string]: any;
+  };
 }
 
 export const apiService = new ApiService();

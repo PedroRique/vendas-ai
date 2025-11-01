@@ -1,0 +1,26 @@
+.date-picker {
+  display: flex;
+  align-items: center;
+  position: relative;
+
+  .icon {
+    margin-right: 8px;
+    color: #666;
+    display: flex;
+    align-items: center;
+  }
+
+  .date-picker-input {
+    flex: 1;
+
+    :deep(.p-inputtext) {
+      width: 100%;
+    }
+
+    :deep(.p-datepicker) {
+      position: absolute;
+      z-index: 1000;
+    }
+  }
+}
+

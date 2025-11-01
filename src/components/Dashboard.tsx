@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { useAuth } from '../hooks/useAuth';
+import LocalizationForm from './LocalizationForm';
 import './Dashboard.scss';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const [showLocalizationForm, setShowLocalizationForm] = useState(true);
 
   const handleLogout = async () => {
     try {
@@ -15,29 +17,54 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleLocalizationSuccess = (data: any) => {
+    console.log('Localization data:', data);
+    // TODO: Navigate to next step or save data
+    // For now, we'll keep the form visible but you can navigate to vehicle selection
+    setShowLocalizationForm(false);
+  };
+
+  const handleLocalizationAbort = () => {
+    // TODO: Handle abort action
+    console.log('Localization form aborted');
+  };
+
   return (
     <div className="dashboard-container">
       <Card className="dashboard-card">
         <div className="dashboard-header">
-          <h1>Dashboard</h1>
-          <p>Bem-vindo ao sistema de vendas!</p>
-        </div>
-
-        <div className="dashboard-content">
-          <div className="user-info">
-            <h3>Informações do Usuário</h3>
-            <p><strong>Login:</strong> {user?.login}</p>
-            <p><strong>Token:</strong> {user?.token ? '***' + user.token.slice(-8) : 'N/A'}</p>
-          </div>
-
-          <div className="dashboard-actions">
+          <div className="header-top">
+            <h1>Sistema de Vendas</h1>
             <Button
               label="Sair"
               icon="pi pi-sign-out"
               onClick={handleLogout}
               severity="secondary"
+              size="small"
             />
           </div>
+          <p>Bem-vindo, {user?.login}!</p>
+        </div>
+
+        <div className="dashboard-content">
+          {showLocalizationForm ? (
+            <LocalizationForm
+              onSuccess={handleLocalizationSuccess}
+              onAbort={handleLocalizationAbort}
+              agencyCode={(user && 'id_carrental' in user ? (user.id_carrental as number) : 0) || 0}
+            />
+          ) : (
+            <div className="content-placeholder">
+              <h3>Formulário de destino concluído!</h3>
+              <p>Próximo passo: Seleção de veículos</p>
+              <Button
+                label="Voltar ao formulário"
+                icon="pi pi-arrow-left"
+                onClick={() => setShowLocalizationForm(true)}
+                severity="secondary"
+              />
+            </div>
+          )}
         </div>
       </Card>
     </div>

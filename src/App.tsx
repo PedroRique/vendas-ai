@@ -1,17 +1,14 @@
-import React from 'react';
-import LoginForm from './components/LoginForm';
-import Dashboard from './components/Dashboard';
-import { useAuth } from './hooks/useAuth';
-import './App.css';
+import "./App.css";
+import Dashboard from "./components/Dashboard";
+import LoginForm from "./components/LoginForm";
+import { useAuth } from "./hooks/useAuth";
 
 function App() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="App">
-      {isAuthenticated ? <Dashboard /> : <LoginForm />}
-    </div>
+    <div className="App">{isAuthenticated ? <Dashboard /> : <LoginForm />}</div>
   );
 }
 
-export default App
+export default App;

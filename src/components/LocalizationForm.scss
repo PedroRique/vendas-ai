@@ -1,0 +1,196 @@
+.localization-form-container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.localization {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .main-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    color: #333;
+  }
+
+  .localization-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    &:has(.form-label-dt) {
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .form-label {
+      font-weight: 500;
+      color: #333;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+
+      &.-partner,
+      &.-franchiseKm,
+      &.-coupon {
+        margin-bottom: 0.5rem;
+      }
+
+      &.form-label-dt {
+        min-width: 120px;
+      }
+
+      &.form-label-hr {
+        min-width: 60px;
+        margin-left: 1rem;
+      }
+
+      &.-retrieve {
+        margin-left: 0;
+      }
+    }
+
+    .form-label-chk {
+      font-weight: 400;
+      color: #333;
+      font-size: 0.875rem;
+      margin-left: 0.5rem;
+      cursor: pointer;
+    }
+
+    .form-control-chk {
+      width: auto;
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+
+    .form-control-franchiseKm,
+    .form-control-coupon {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+
+      &:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      }
+
+      &.-error {
+        border-color: #dc3545;
+        
+        &:focus {
+          box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+        }
+      }
+    }
+
+    .partner-autocomplete,
+    .location-autocomplete {
+      width: 100%;
+    }
+
+    .input-error {
+      color: #dc3545;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    // Date and time picker wrapper
+    &:has(.date-picker) {
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+
+    .btn {
+      flex: 1;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.-abort {
+        background-color: #6c757d;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: #5a6268;
+        }
+      }
+
+      &.-continue {
+        background-color: #007bff;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: #0056b3;
+        }
+
+        &:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .localization-form-container {
+    padding: 1rem;
+  }
+
+  .localization {
+    padding: 1rem;
+
+    .box {
+      &:has(.form-label-dt) {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .form-label-hr {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+
+      &:has(.date-picker) {
+        flex-direction: column;
+      }
+    }
+
+    .footer {
+      flex-direction: column;
+
+      .btn {
+        width: 100%;
+      }
+    }
+  }
+}
+

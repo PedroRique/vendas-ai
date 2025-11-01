@@ -3,7 +3,7 @@ export const ENVIRONMENT = {
   // URLs da API baseadas no sistema AngularJS
   API_URLS: {
     dev: '//localhost:5000/api/',
-    homolog: '//apibookinghmg.zoss.com.br/api/',
+    homolog: 'https://apibooking.zoss.com.br/api/',
     prod: 'https://apibooking.zoss.com.br/api/'
   },
   

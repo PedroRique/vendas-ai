@@ -1,0 +1,17 @@
+.time-picker {
+  display: flex;
+  align-items: center;
+
+  .time-picker-input {
+    width: 100%;
+
+    :deep(.p-inputtext) {
+      width: 100%;
+    }
+
+    :deep(.p-timepicker) {
+      padding: 0.5rem;
+    }
+  }
+}
+
