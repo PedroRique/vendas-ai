@@ -1,0 +1,82 @@
+@import '../styles/variables';
+
+.step-navigation-menu {
+  position: fixed;
+  left: 0;
+  top: 35px;
+  z-index: 100;
+
+  .menu-box {
+    background-color: #222;
+    border-radius: 0 6px 6px 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 50px;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+
+    li {
+      .menu-item {
+        background: transparent;
+        border-top: 0;
+        border-right: 0;
+        border-bottom: 1px solid #818181;
+        border-left: 0;
+        cursor: pointer;
+        display: flex;
+        height: 50px;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        position: relative;
+        width: 50px;
+        text-align: center;
+        transition: all 0.2s ease;
+        padding: 0;
+        outline: none;
+
+        &:hover:not(:disabled):not(.--disabled) {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        &:focus:not(:disabled):not(.--disabled) {
+          outline: 2px solid rgba(245, 197, 66, 0.5);
+          outline-offset: -2px;
+        }
+
+        &:disabled,
+        &.--disabled {
+          cursor: not-allowed;
+          opacity: 0.5;
+          border-bottom: 1px solid #4a4a4a;
+
+          i {
+            color: #4a4a4a !important;
+          }
+        }
+
+        i {
+          align-items: center;
+          color: #d4d4d4;
+          display: flex;
+          font-size: 28px;
+          transition: color 0.2s ease;
+          line-height: 1;
+        }
+
+        &.--active {
+          i {
+            color: #f5c542; // yellow2 similar to Zoss system
+          }
+        }
+      }
+
+      &:last-child {
+        .menu-item {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+}
+

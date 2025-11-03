@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { useAuth } from '../hooks/useAuth';
@@ -10,6 +10,7 @@ import PersonalDataPage from './PersonalDataPage';
 import QuotationPage from './QuotationPage';
 import FinalizationPage from './FinalizationPage';
 import StartAttendanceModal from './StartAttendanceModal';
+import StepNavigationMenu from './StepNavigationMenu';
 import { apiService } from '../services/api';
 import type { BookingResponse } from '../services/api';
 import { formatBooking } from '../utils/formatBooking';
@@ -47,6 +48,7 @@ interface PersonalData {
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const [currentStep, setCurrentStep] = useState<'localization' | 'cars' | 'accessories' | 'protections' | 'personal' | 'quotation' | 'finalization'>('localization');
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [localizationData, setLocalizationData] = useState<LocalizationFormData | null>(null);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [accessories, setAccessories] = useState<Accessory[]>([]);
@@ -57,6 +59,42 @@ const Dashboard: React.FC = () => {
   const [showTokenModal, setShowTokenModal] = useState(false); // Modal fecha por padrão, abre quando usuário clica no botão
 
   const agencyCode = (user && 'id_carrental' in user ? (user.id_carrental as number) : 100) || 100;
+
+  // Função para mapear step para índice
+  const getStepIndex = (step: string): number => {
+    const stepMap: Record<string, number> = {
+      'localization': 0,
+      'cars': 1,
+      'accessories': 2,
+      'protections': 3,
+      'personal': 4,
+      'quotation': 4, // Mesmo índice que personal
+      'finalization': 5,
+    };
+    return stepMap[step] ?? 0;
+  };
+
+  // Atualizar stepIndex quando currentStep mudar
+  useEffect(() => {
+    const newIndex = getStepIndex(currentStep);
+    if (newIndex > currentStepIndex) {
+      setCurrentStepIndex(newIndex);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
+
+  // Função para encerrar completamente o atendimento
+  const endAttendance = () => {
+    setLocalizationData(null);
+    setSelectedCar(null);
+    setAccessories([]);
+    setProtections([]);
+    setPersonalData(null);
+    setBooking(null);
+    setProtocolo(null);
+    setCurrentStep('localization');
+    setCurrentStepIndex(0);
+  };
 
   const handleTokenSuccess = (newProtocolo: string) => {
     setProtocolo(newProtocolo);
@@ -79,41 +117,66 @@ const Dashboard: React.FC = () => {
     console.log('Localization data:', data);
     setLocalizationData(data);
     setCurrentStep('cars');
+    setCurrentStepIndex(1);
   };
 
   const handleLocalizationAbort = () => {
-    // Voltar para login ou limpar estado
-    console.log('Localization form aborted');
+    // Encerrar atendimento completamente
+    endAttendance();
+  };
+
+  const handleStepChange = (step: string) => {
+    // Permitir navegação apenas para steps já visitados e com dados necessários
+    const targetIndex = getStepIndex(step);
+    if (targetIndex <= currentStepIndex) {
+      // Verificar se há dados necessários para navegar para o step
+      const stepNeedsData: Record<string, boolean> = {
+        'localization': true, // Sempre pode navegar para localization
+        'cars': !!localizationData,
+        'accessories': !!(selectedCar && localizationData),
+        'protections': !!(selectedCar && localizationData),
+        'personal': !!(selectedCar && localizationData),
+        'quotation': !!(selectedCar && localizationData && personalData),
+        'finalization': !!(selectedCar && booking),
+      };
+
+      if (stepNeedsData[step] !== false) {
+        setCurrentStep(step as typeof currentStep);
+      }
+    }
   };
 
   const handleCarSelect = (car: Car) => {
     setSelectedCar(car);
     setCurrentStep('accessories');
+    setCurrentStepIndex(2);
   };
 
   const handleCarsPageAbort = () => {
-    // Voltar para formulário de localização
-    setCurrentStep('localization');
+    // Encerrar atendimento completamente
+    endAttendance();
   };
 
   const handleAccessoriesSuccess = (selectedAccessories: Accessory[]) => {
     setAccessories(selectedAccessories);
     setCurrentStep('protections');
+    setCurrentStepIndex(3);
   };
 
   const handleAccessoriesAbort = () => {
-    // Voltar para seleção de carros
-    setCurrentStep('cars');
+    // Encerrar atendimento completamente
+    endAttendance();
   };
 
   const handleProtectionsSuccess = (selectedProtections: Protection[]) => {
     setProtections(selectedProtections);
     setCurrentStep('personal');
+    setCurrentStepIndex(4);
   };
 
   const handleProtectionsAbort = () => {
-    // Voltar para seleção de acessórios
-    setCurrentStep('accessories');
+    // Encerrar atendimento completamente
+    endAttendance();
   };
 
   const handlePersonalDataSuccess = async (data: PersonalData, isNewCustomer: boolean) => {
@@ -122,9 +185,25 @@ const Dashboard: React.FC = () => {
     // Salvar dados pessoais e fazer booking
     if (selectedCar && localizationData && protocolo) {
       try {
+        // Construir pesquisaLocacao com os dados necessários
+        const locData = localizationData.localization as Record<string, unknown>;
+        const selectedCarWithLoc = {
+          ...selectedCar,
+          pesquisaLocacao: {
+            ...selectedCar.pesquisaLocacao,
+            dataHoraDevolucao: (locData.dataHoraDevolucao as string) || '',
+            dataHoraRetirada: (locData.dataHoraRetirada as string) || '',
+            localRetiradaSigla: (locData.locaisRetirada as string[])?.[0] || selectedCar.pesquisaLocacao.localRetiradaNome || '',
+            localDevolucaoSigla: (locData.locaisDevolucao as string[])?.[0] || selectedCar.pesquisaLocacao.localDevolucaoNome || '',
+          },
+        };
+
         const bookingData = formatBooking({
-          selectedCar,
-          personal: data,
+          selectedCar: selectedCarWithLoc,
+          personal: {
+            ...data,
+            documentType: data.documentType || 1, // Default to CPF if not set
+          },
           accessories,
           protection: protections,
           localization: localizationData.localization as Record<string, unknown>,
@@ -135,7 +214,8 @@ const Dashboard: React.FC = () => {
         const response = await apiService.booking(agencyCode, bookingData);
         setBooking(response.dados);
         setCurrentStep('finalization');
-      } catch (error: any) {
+        setCurrentStepIndex(5);
+      } catch (error: unknown) {
         console.error('Erro ao finalizar reserva:', error);
         // Não navegar para finalização em caso de erro
       }
@@ -146,20 +226,37 @@ const Dashboard: React.FC = () => {
     // Salvar dados pessoais antes de ir para cotação
     setPersonalData(data);
     setCurrentStep('quotation');
+    setCurrentStepIndex(4);
   };
 
   const handlePersonalDataAbort = () => {
-    // Voltar para seleção de proteções
-    setCurrentStep('protections');
+    // Encerrar atendimento completamente
+    endAttendance();
   };
 
   const handleQuotationSuccess = async () => {
     // Quando clica em "Finalizar" na cotação
     if (selectedCar && localizationData && personalData && protocolo) {
       try {
+        // Construir pesquisaLocacao com os dados necessários
+        const locData = localizationData.localization as Record<string, unknown>;
+        const selectedCarWithLoc = {
+          ...selectedCar,
+          pesquisaLocacao: {
+            ...selectedCar.pesquisaLocacao,
+            dataHoraDevolucao: (locData.dataHoraDevolucao as string) || '',
+            dataHoraRetirada: (locData.dataHoraRetirada as string) || '',
+            localRetiradaSigla: (locData.locaisRetirada as string[])?.[0] || selectedCar.pesquisaLocacao.localRetiradaNome || '',
+            localDevolucaoSigla: (locData.locaisDevolucao as string[])?.[0] || selectedCar.pesquisaLocacao.localDevolucaoNome || '',
+          },
+        };
+
         const bookingData = formatBooking({
-          selectedCar,
-          personal: personalData,
+          selectedCar: selectedCarWithLoc,
+          personal: {
+            ...personalData,
+            documentType: personalData.documentType || 1, // Default to CPF if not set
+          },
           accessories,
           protection: protections,
           localization: localizationData.localization as Record<string, unknown>,
@@ -170,26 +267,21 @@ const Dashboard: React.FC = () => {
         const response = await apiService.booking(agencyCode, bookingData);
         setBooking(response.dados);
         setCurrentStep('finalization');
-      } catch (error: any) {
+        setCurrentStepIndex(5);
+      } catch (error: unknown) {
         console.error('Erro ao finalizar reserva:', error);
       }
     }
   };
 
   const handleQuotationAbort = () => {
-    setCurrentStep('personal');
+    // Encerrar atendimento completamente
+    endAttendance();
   };
 
   const handleFinalizationAbort = () => {
-    // Limpar estado e voltar ao início
-    setLocalizationData(null);
-    setSelectedCar(null);
-    setAccessories([]);
-    setProtections([]);
-    setPersonalData(null);
-    setBooking(null);
-    setProtocolo(null);
-    setCurrentStep('localization');
+    // Encerrar atendimento completamente
+    endAttendance();
   };
 
   const handleFinalizationRestart = () => {
@@ -216,6 +308,13 @@ const Dashboard: React.FC = () => {
             size="small"
           />
         </div>
+        {protocolo && (
+          <StepNavigationMenu
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+            onStepChange={handleStepChange}
+          />
+        )}
         <AvailableCarsPage
           availabilityData={localizationData.availability}
           localizationData={{
@@ -232,6 +331,13 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'accessories' && selectedCar && localizationData) {
     return (
       <div className="dashboard-container">
+        {protocolo && (
+          <StepNavigationMenu
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+            onStepChange={handleStepChange}
+          />
+        )}
         <AccessoriesPage
           selectedCar={selectedCar}
           localizationData={{
@@ -248,6 +354,13 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'protections' && selectedCar && localizationData) {
     return (
       <div className="dashboard-container">
+        {protocolo && (
+          <StepNavigationMenu
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+            onStepChange={handleStepChange}
+          />
+        )}
         <ProtectionsPage
           selectedCar={selectedCar}
           localizationData={{
@@ -266,6 +379,13 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'personal' && selectedCar && localizationData) {
     return (
       <div className="dashboard-container">
+        {protocolo && (
+          <StepNavigationMenu
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+            onStepChange={handleStepChange}
+          />
+        )}
         <PersonalDataPage
           selectedCar={selectedCar}
           localizationData={{
@@ -287,6 +407,13 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'quotation' && selectedCar && localizationData && personalData && protocolo) {
     return (
       <div className="dashboard-container">
+        {protocolo && (
+          <StepNavigationMenu
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+            onStepChange={handleStepChange}
+          />
+        )}
         <QuotationPage
           selectedCar={selectedCar}
           localizationData={{
@@ -310,6 +437,13 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'finalization' && selectedCar && booking) {
     return (
       <div className="dashboard-container">
+        {protocolo && (
+          <StepNavigationMenu
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+            onStepChange={handleStepChange}
+          />
+        )}
         <FinalizationPage
           selectedCar={selectedCar}
           booking={booking}
@@ -353,12 +487,21 @@ const Dashboard: React.FC = () => {
               />
             </div>
           ) : currentStep === 'localization' ? (
-            <LocalizationForm
-              onSuccess={handleLocalizationSuccess}
-              onAbort={handleLocalizationAbort}
-              agencyCode={agencyCode}
-              protocolo={protocolo}
-            />
+            <>
+              {protocolo && (
+                <StepNavigationMenu
+                  currentStep={currentStep}
+                  currentStepIndex={currentStepIndex}
+                  onStepChange={handleStepChange}
+                />
+              )}
+              <LocalizationForm
+                onSuccess={handleLocalizationSuccess}
+                onAbort={handleLocalizationAbort}
+                agencyCode={agencyCode}
+                protocolo={protocolo}
+              />
+            </>
           ) : (
             <div className="content-placeholder">
               <h3>Erro ao carregar dados</h3>
