@@ -21,7 +21,7 @@ const CarCard: React.FC<CarCardProps> = ({
   onSelect,
   onCopy,
   onViewDetails,
-  rentalType,
+  rentalType: _rentalType,
   franchiseKm,
 }) => {
   const formatCurrency = (value: number): string => {

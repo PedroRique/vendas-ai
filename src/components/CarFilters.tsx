@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Checkbox } from 'primereact/checkbox';
 import type { CarFilter } from '../hooks/useCarFilters';
@@ -37,7 +37,7 @@ const CarFilters: React.FC<CarFiltersProps> = ({
     }
   };
 
-  const isFilterDisabled = (filter: CarFilter, filterList: CarFilter[]): boolean => {
+  const isFilterDisabled = (filter: CarFilter, _filterList: CarFilter[]): boolean => {
     // Se há outro filtro do mesmo nome ativo com valor diferente, desabilita este
     if (filter.name !== 'nomeAgencia') {
       const activeValue = activeFilters[filter.name as keyof typeof activeFilters];
@@ -48,7 +48,7 @@ const CarFilters: React.FC<CarFiltersProps> = ({
     return false;
   };
 
-  const renderFilterList = (filters: CarFilter[], listType: string) => {
+  const renderFilterList = (filters: CarFilter[], _listType: string) => {
     return (
       <ul className="filter-list">
         {filters.map((filter, index) => {

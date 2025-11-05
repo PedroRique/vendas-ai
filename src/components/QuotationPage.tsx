@@ -41,7 +41,7 @@ const QuotationPage: React.FC<QuotationPageProps> = ({
   personalData,
   protocolo,
   agencyCode,
-  onSuccess,
+  onSuccess: _onSuccess,
   onAbort,
 }) => {
   const toast = React.useRef<Toast>(null);

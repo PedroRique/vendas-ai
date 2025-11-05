@@ -137,7 +137,7 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
     }
   };
 
-  const handleCopyCar = (car: Car) => {
+  const handleCopyCar = (_car: Car) => {
     toast.current?.show({
       severity: 'success',
       summary: 'Copiado',
@@ -168,7 +168,7 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
             availableFilters={availableFilters}
             characteristicFilters={characteristicFilters}
             carrentalFilters={carrentalFilters}
-            activeFilters={activeFilters}
+            activeFilters={activeFilters as Record<string, unknown>}
             onFilterChange={toggleFilter}
           />
           <div className="sidebar-actions">

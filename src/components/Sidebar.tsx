@@ -79,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Calcular taxa administrativa
   const calcAdminTax = useMemo(() => {
-    const valorDiaria = car.valorDiariaTotalMensal || car.valorTotal || 0;
+    const valorDiaria = (car as any).valorDiariaTotalMensal || car.valorTotal || 0;
     const valorProtecao = protections.reduce((sum, p) => sum + (p.valorTotal || 0), 0);
     const valorOpcionais = accessories.reduce((sum, a) => sum + ((a.valorTotal || 0) * (a.quantidade || 0)), 0);
     const valorHoraExtraCalc = valorHoraExtra;
@@ -94,7 +94,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Calcular valor das horas extras
   const calcValorHoraExtra = useMemo(() => {
-    const valorDiaria = car.valorDiariaTotalMensal || car.valorTotal || 0;
     const valorProtecao = protections.reduce((sum, p) => sum + (p.valorTotal || 0), 0);
     const quantidadeDiarias = car.quantidadeDiarias || 0;
     const quantidadeHoraExtra = (car as any).quantidadeHoraExtra || 0;
@@ -114,10 +113,10 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Calcular valor total
   useEffect(() => {
-    const valorDiaria = car.valorDiariaTotalMensal || car.valorTotal || 0;
+    const valorDiaria = (car as any).valorDiariaTotalMensal || car.valorTotal || 0;
     const valorProtecao = protections.reduce((sum, p) => sum + (p.valorTotal || 0), 0);
     const valorOpcionais = accessories.reduce((sum, a) => sum + ((a.valorTotal || 0) * (a.quantidade || 0)), 0);
-    const valorTaxaDevolucaoCalc = car.valorTaxaRetorno || valorTaxaDevolucao || 0;
+    const valorTaxaDevolucaoCalc = (car as any).valorTaxaRetorno || valorTaxaDevolucao || 0;
     const valorHoraExtraCalc = calcValorHoraExtra;
 
     const baseValue = valorDiaria + valorOpcionais + valorProtecao + valorTaxaDevolucaoCalc + valorHoraExtraCalc;
@@ -162,7 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const valorDiariaPorUnidade = dailys > 0 ? (car.valorDiariaTotalMensal || car.valorTotal || 0) / dailys : 0;
+  const valorDiariaPorUnidade = dailys > 0 ? ((car as any).valorDiariaTotalMensal || car.valorTotal || 0) / dailys : 0;
   const quantidadeHoraExtra = (car as any).quantidadeHoraExtra || 0;
   const valorHoraExtraPorUnidade = quantidadeHoraExtra > 0 ? valorHoraExtra / quantidadeHoraExtra : 0;
   const percentualTaxaEventual = (car as any).percentualTaxaEventual || 0;
@@ -253,7 +252,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <p className="label">
           Diárias: <br />
           <span className="value">{dailys}x {formatCurrency(valorDiariaPorUnidade)}</span>
-          <span className="price">{formatCurrency(car.valorDiariaTotalMensal || car.valorTotal || 0)}</span>
+          <span className="price">{formatCurrency((car as any).valorDiariaTotalMensal || car.valorTotal || 0)}</span>
         </p>
 
         <div className="list-box">
@@ -307,7 +306,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <p className="label">
           Taxa de Devolução: <br />
           <span className="value">(Taxa)</span>
-          <span className="price">{formatCurrency(car.valorTaxaRetorno || valorTaxaDevolucao)}</span>
+          <span className="price">{formatCurrency((car as any).valorTaxaRetorno || valorTaxaDevolucao)}</span>
         </p>
 
         {percentualTaxaEventual > 0 && (

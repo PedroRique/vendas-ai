@@ -179,7 +179,7 @@ const Dashboard: React.FC = () => {
     endAttendance();
   };
 
-  const handlePersonalDataSuccess = async (data: PersonalData, isNewCustomer: boolean) => {
+  const handlePersonalDataSuccess = async (data: PersonalData, _isNewCustomer: boolean) => {
     setPersonalData(data);
     
     // Salvar dados pessoais e fazer booking
@@ -222,7 +222,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handlePersonalDataQuotation = async (data: PersonalData, isNewCustomer: boolean) => {
+  const handlePersonalDataQuotation = async (data: PersonalData, _isNewCustomer: boolean) => {
     // Salvar dados pessoais antes de ir para cotação
     setPersonalData(data);
     setCurrentStep('quotation');
@@ -496,7 +496,7 @@ const Dashboard: React.FC = () => {
                 />
               )}
               <LocalizationForm
-                onSuccess={handleLocalizationSuccess}
+                onSuccess={(data) => handleLocalizationSuccess(data as unknown as LocalizationFormData)}
                 onAbort={handleLocalizationAbort}
                 agencyCode={agencyCode}
                 protocolo={protocolo}

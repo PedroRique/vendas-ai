@@ -83,15 +83,7 @@ const ProtectionsPage: React.FC<ProtectionsPageProps> = ({
     useState<Protection | null>(initialAdditionalProtection);
 
   // Calcular basicProtection (proteção básica obrigatória)
-  const basicProtection = useMemo(() => {
-    const basic = mainProtections.find((p) => p.obrigatorio);
-    return basic?.valorTotal || 0;
-  }, [mainProtections]);
-
-  const basicProtectionDaily = useMemo(() => {
-    const basic = mainProtections.find((p) => p.obrigatorio);
-    return basic?.valorDiaria || 0;
-  }, [mainProtections]);
+  // Removido basicProtection e basicProtectionDaily não utilizados
 
   // Calcular diferença de preço quando não é obrigatória
   const calcProtectionDiff = (protection: Protection): number => {
@@ -126,12 +118,6 @@ const ProtectionsPage: React.FC<ProtectionsPageProps> = ({
   }, [selectedProtection, selectedAdditionalProtection]);
 
   const handleSubmit = () => {
-    // Calcular total
-    const totalProtections = selectedProtections.reduce(
-      (total, p) => total + p.valorTotal,
-      0
-    );
-
     onSuccess(selectedProtections);
     toast.current?.show({
       severity: 'success',
@@ -146,7 +132,7 @@ const ProtectionsPage: React.FC<ProtectionsPageProps> = ({
     }
   };
 
-  const isMensal = selectedCar.dadosVeiculo.ehMensal;
+  // Removido isMensal não utilizado
 
   return (
     <div className="protections-page">

@@ -26,14 +26,18 @@ interface FinalizationPageProps {
 }
 
 const FinalizationPage: React.FC<FinalizationPageProps> = ({
+  selectedCar,
   booking,
+  accessories,
+  protections,
+  personalData,
   onAbort,
   onRestart,
 }) => {
   const toast = React.useRef<Toast>(null);
 
   const handleCopyReservation = (reservationNumber: string) => {
-    const texto = `Acabamos de cadastrar sua reserva. Este é o seu código: ${reservationNumber}`;
+    let texto = `Acabamos de cadastrar sua reserva. Este é o seu código: ${reservationNumber}`;
     texto += `\nAtravés do link ( https://www.movida.com.br/reserva/consultar ) você pode consultar o status da sua reserva.`;
     texto += `\nEnviaremos também para o seu celular um SMS com o código da sua reserva (${reservationNumber}), as informações e status de confirmação foram direcionadas para seu e-mail.`;
     texto += `\nFique atento às datas e horários de retirada/devolução do veículo, assim como os valores de coparticipação de franquia.`;

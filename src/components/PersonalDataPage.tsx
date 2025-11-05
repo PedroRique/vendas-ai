@@ -10,7 +10,7 @@ import { apiService, DocumentTypesEnum } from '../services/api';
 import { validateCPF } from '../utils/cpfValidator';
 import { formatCPF, cleanCPF } from '../utils/cpfMask';
 import { formatPhoneBR, cleanPhone } from '../utils/phoneMask';
-import { SORTED_DDI_LIST, type DDIOption } from '../utils/ddiList';
+import { SORTED_DDI_LIST } from '../utils/ddiList';
 import Sidebar from './Sidebar';
 import './PersonalDataPage.scss';
 

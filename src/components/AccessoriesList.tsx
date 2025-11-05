@@ -12,8 +12,8 @@ const AccessoriesList: React.FC<AccessoriesListProps> = ({
   accessories,
   onAccessoryChange,
 }) => {
-  const handleQuantityChange = (accessory: Accessory, value: number | null) => {
-    const quantity = value || 0;
+  const handleQuantityChange = (accessory: Accessory, value: number | null | undefined) => {
+    const quantity = value ?? 0;
     const maxQuantity = accessory.quantidadeMaxima || 999;
     const finalQuantity = Math.min(Math.max(0, quantity), maxQuantity);
     onAccessoryChange(accessory, finalQuantity);

@@ -30,6 +30,9 @@ export interface Car {
     codigoAcriss: string;
     codigoAgencia: number;
     ehMensal: boolean;
+    valorDiariaTotalMensal?: number;
+    valorTaxaRetorno?: number;
+    [key: string]: unknown;
   };
   pesquisaLocacao: {
     localRetiradaNome: string;
@@ -81,6 +84,7 @@ interface ActiveFilters {
   arCondicionado?: boolean;
   numeroPortas?: number;
   nomeAgencia?: string[];
+  [key: string]: unknown;
 }
 
 export interface UseCarFiltersReturn {
