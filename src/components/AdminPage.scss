@@ -1,0 +1,85 @@
+.admin-page {
+  padding: 2rem;
+  flex: 1;
+
+  .admin-content {
+    max-width: 1400px;
+    margin: 0 auto;
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 400;
+        color: #333;
+        margin: 0;
+      }
+
+      .create-user-btn {
+        min-width: 150px;
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+
+      p {
+        margin-bottom: 20px;
+        color: #666;
+        font-size: 16px;
+      }
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+
+      .search-input {
+        width: 100%;
+        max-width: 400px;
+      }
+    }
+
+    .users-table {
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 1rem;
+
+      .action-buttons {
+        display: flex;
+        justify-content: center;
+      }
+    }
+  }
+
+  .access-denied {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    max-width: 600px;
+    margin: 2rem auto;
+
+    h2 {
+      color: #e74c3c;
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+      font-weight: 400;
+    }
+
+    p {
+      color: #666;
+      font-size: 16px;
+    }
+  }
+}
+

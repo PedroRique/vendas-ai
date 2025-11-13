@@ -38,7 +38,6 @@ const FinalizationPage: React.FC<FinalizationPageProps> = ({
 
   const handleCopyReservation = (reservationNumber: string) => {
     let texto = `Acabamos de cadastrar sua reserva. Este é o seu código: ${reservationNumber}`;
-    texto += `\nAtravés do link ( https://www.movida.com.br/reserva/consultar ) você pode consultar o status da sua reserva.`;
     texto += `\nEnviaremos também para o seu celular um SMS com o código da sua reserva (${reservationNumber}), as informações e status de confirmação foram direcionadas para seu e-mail.`;
     texto += `\nFique atento às datas e horários de retirada/devolução do veículo, assim como os valores de coparticipação de franquia.`;
     texto += `\nQualquer dúvida ou para mais informações, estamos à disposição através do nosso chat, whatsapp ou 0800 606 8686.`;

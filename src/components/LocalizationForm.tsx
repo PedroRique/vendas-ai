@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
+import { MultiSelect } from 'primereact/multiselect';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import dayjs from 'dayjs';
@@ -29,13 +30,11 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
   const toast = React.useRef<Toast>(null);
   
   const {
-    // Partners
-    partners,
-    partnerFiltered,
-    selectedPartner,
-    partnerInput,
-    setPartnerInput,
-    selectPartner,
+    // Locadoras
+    locadoras,
+    selectedLocadoras,
+    setSelectedLocadoras,
+    isLoadingLocadoras,
     
     // Franchise KM
     franchiseKmList,
@@ -81,19 +80,17 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
   const [couponError, setCouponError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Partner categories for autocomplete
-  const partnerCategories: AutocompleteCategory[] = useMemo(() => {
-    if (partnerFiltered.length === 0) return [];
-    return [{
-      title: 'Parcerias',
-      items: partnerFiltered.map(p => ({
-        nome: p.descricao,
-        descricao: p.descricao,
-        codigo: p.codigo,
-      })),
-      icon: 'partner',
-    }];
-  }, [partnerFiltered]);
+  // Prepare locadoras options for MultiSelect
+  // Usar nomeAgencia como valor para garantir consistência com os filtros de carros
+  const locadorasOptions = useMemo(() => {
+    return locadoras.map(loc => {
+      const nomeAgencia = loc.nomeAgencia || loc.nome || `Locadora ${loc.codigo}`;
+      return {
+        label: nomeAgencia,
+        value: nomeAgencia, // Usar o nome exato que aparece nos carros
+      };
+    });
+  }, [locadoras]);
 
   // Location categories for autocomplete
   const getCarLocationCategories: AutocompleteCategory[] = useMemo(() => {
@@ -129,10 +126,6 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
     return cats;
   }, [locations]);
 
-  // Handle partner search
-  const handlePartnerSearch = (value: string) => {
-    setPartnerInput(value);
-  };
 
   // Handle location search with debounce
   const handleLocationSearch = (value: string, forRetrieve: boolean = false) => {
@@ -164,24 +157,6 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
 
   // Check if can show franchise
   const canShowFranchise = (): boolean => {
-    const codigoMovidaCargo = '6788075';
-    const codigo99Movida = '1829626';
-    const codigoUberMovida = '971697';
-    const codigo99Moover = '6788009';
-    const codigoUberMoover = '6788053';
-    
-    const selectedPartnerCodes = [
-      codigoMovidaCargo,
-      codigo99Moover,
-      codigoUberMoover,
-      codigo99Movida,
-      codigoUberMovida,
-    ];
-
-    if (selectedPartner) {
-      return selectedPartnerCodes.includes(selectedPartner.codigo);
-    }
-
     // Check date range for Mensal Flex (assuming 30 days threshold)
     const dateDiff = dayjs(retrieveDate).diff(dayjs(getCarDate), 'days');
     return dateDiff >= 30;
@@ -220,7 +195,6 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
 
       // Prepare tarifas
       const tarifas = [];
-      if (selectedPartner) tarifas.push(selectedPartner);
       if (canShowFranchise() && selectedFranchiseKm) {
         tarifas.push(selectedFranchiseKm);
       }
@@ -254,7 +228,7 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
         protocolo: protocoloToUse,
         franquiaKM: selectedFranchiseKm || undefined,
         tarifas,
-        parceria: selectedPartner || undefined,
+        locadoras: selectedLocadoras.length > 0 ? selectedLocadoras : undefined,
       };
 
       const agencyCodeToUse = agencyCode || (user && 'id_carrental' in user ? (user.id_carrental as number) : 100) || 100;
@@ -288,9 +262,10 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
       }
 
       // Success
+      const dateDiff = dayjs(retrieveDate).diff(dayjs(getCarDate), 'days');
       const rentalType = localizationService.getRentalType(
-        selectedPartner,
-        dayjs(retrieveDate).diff(dayjs(getCarDate), 'days'),
+        null, // No partner anymore
+        dateDiff,
         30 // rangeDayMonthly - could be from config
       );
 
@@ -335,24 +310,26 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
       <section className="localization">
         <h1 className="main-title">Destino / Locação</h1>
         <form className="localization-form" onSubmit={handleSubmit}>
-          {/* Partner Selection */}
+          {/* Locadoras Selection */}
           <div className="box">
-            <label htmlFor="partner" className="form-label -partner">
-              Parceria
+            <label htmlFor="locadoras" className="form-label -locadoras">
+              Locadoras
             </label>
-            <AutocompleteInput
-              value={partnerInput}
-              onChange={handlePartnerSearch}
-              onSelect={(item) => {
-                const partner = partners.find(p => p.descricao === item.descricao || p.codigo === item.codigo);
-                if (partner) {
-                  selectPartner(partner);
-                }
-              }}
-              categories={partnerCategories}
-              placeholder="Digite a parceria"
-              className="partner-autocomplete"
+            <MultiSelect
+              id="locadoras"
+              value={selectedLocadoras}
+              options={locadorasOptions}
+              onChange={(e) => setSelectedLocadoras(e.value || [])}
+              placeholder="Selecione as locadoras (opcional)"
+              display="chip"
+              className="locadoras-multiselect"
+              loading={isLoadingLocadoras}
+              filter
+              showClear
             />
+            <small className="form-help-text">
+              Se nenhuma locadora for selecionada, o sistema pesquisará em todas as locadoras disponíveis.
+            </small>
           </div>
 
           {/* Get Car Location */}

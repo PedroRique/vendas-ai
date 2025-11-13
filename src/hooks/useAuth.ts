@@ -25,11 +25,25 @@ export const useAuth = () => {
     return authService.createPassword(emailOuNomeLogin, senha);
   };
 
+  const isAdmin = (): boolean => {
+    const user = authState.user;
+    if (!user) return false;
+    
+    // ProfileEnum.ADMIN = 1 (baseado no sistema antigo)
+    if ('tipoUsuario' in user && typeof user.tipoUsuario === 'object' && user.tipoUsuario !== null) {
+      const tipoUsuario = user.tipoUsuario as { tipoUsuarioId?: number; [key: string]: unknown };
+      return tipoUsuario.tipoUsuarioId === 1;
+    }
+    
+    return false;
+  };
+
   return {
     ...authState,
     login,
     logout,
     checkFirstAccess,
     createPassword,
+    isAdmin: isAdmin(),
   };
 };

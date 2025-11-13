@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { useAuth } from '../hooks/useAuth';
 import LocalizationForm from './LocalizationForm';
@@ -9,7 +8,8 @@ import ProtectionsPage from './ProtectionsPage';
 import PersonalDataPage from './PersonalDataPage';
 import QuotationPage from './QuotationPage';
 import FinalizationPage from './FinalizationPage';
-import StartAttendanceModal from './StartAttendanceModal';
+import ReservasPage from './ReservasPage';
+import AdminPage from './AdminPage';
 import StepNavigationMenu from './StepNavigationMenu';
 import { apiService } from '../services/api';
 import type { BookingResponse } from '../services/api';
@@ -46,7 +46,8 @@ interface PersonalData {
 }
 
 const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
+  const [currentPage, setCurrentPage] = useState<'reserve' | 'reservas' | 'admin'>('reserve');
   const [currentStep, setCurrentStep] = useState<'localization' | 'cars' | 'accessories' | 'protections' | 'personal' | 'quotation' | 'finalization'>('localization');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [localizationData, setLocalizationData] = useState<LocalizationFormData | null>(null);
@@ -56,9 +57,36 @@ const Dashboard: React.FC = () => {
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
   const [booking, setBooking] = useState<BookingResponse['dados'] | null>(null);
   const [protocolo, setProtocolo] = useState<string | null>(null);
-  const [showTokenModal, setShowTokenModal] = useState(false); // Modal fecha por padrão, abre quando usuário clica no botão
+  const [isInitializingAttendance, setIsInitializingAttendance] = useState(false);
 
   const agencyCode = (user && 'id_carrental' in user ? (user.id_carrental as number) : 100) || 100;
+
+  // Iniciar atendimento automaticamente quando o componente montar
+  useEffect(() => {
+    const initializeAttendance = async () => {
+      if (!protocolo && !isInitializingAttendance) {
+        setIsInitializingAttendance(true);
+        try {
+          const response = await apiService.startAttendance({
+            codigoAgencia: agencyCode,
+            // tokenAtendimento é opcional, não enviar se não houver
+          });
+          const newProtocolo = response.dados.toString();
+          setProtocolo(newProtocolo);
+        } catch (error) {
+          console.error('Erro ao iniciar atendimento:', error);
+          // Em caso de erro, ainda permite continuar (pode ser que o backend não exija)
+        } finally {
+          setIsInitializingAttendance(false);
+        }
+      }
+    };
+
+    if (currentPage === 'reserve') {
+      initializeAttendance();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agencyCode, currentPage]);
 
   // Função para mapear step para índice
   const getStepIndex = (step: string): number => {
@@ -84,26 +112,29 @@ const Dashboard: React.FC = () => {
   }, [currentStep]);
 
   // Função para encerrar completamente o atendimento
-  const endAttendance = () => {
+  const endAttendance = async () => {
     setLocalizationData(null);
     setSelectedCar(null);
     setAccessories([]);
     setProtections([]);
     setPersonalData(null);
     setBooking(null);
-    setProtocolo(null);
+    setProtocolo(null); // Limpar protocolo para gerar um novo
     setCurrentStep('localization');
     setCurrentStepIndex(0);
+    
+    // Iniciar um novo atendimento automaticamente
+    try {
+      const response = await apiService.startAttendance({
+        codigoAgencia: agencyCode,
+      });
+      const newProtocolo = response.dados.toString();
+      setProtocolo(newProtocolo);
+    } catch (error) {
+      console.error('Erro ao iniciar novo atendimento:', error);
+    }
   };
 
-  const handleTokenSuccess = (newProtocolo: string) => {
-    setProtocolo(newProtocolo);
-    setShowTokenModal(false);
-  };
-
-  const handleShowTokenModal = () => {
-    setShowTokenModal(true);
-  };
 
   const handleLogout = async () => {
     try {
@@ -295,18 +326,114 @@ const Dashboard: React.FC = () => {
     setCurrentStep('localization');
   };
 
+  // Render Admin page
+  if (currentPage === 'admin') {
+    return (
+      <div className="dashboard-container">
+        <div className="dashboard-header-bar">
+          <h1>Reserve Aqui</h1>
+          <div className="header-actions">
+            <Button
+              label="Reserve Aqui"
+              icon="pi pi-shopping-cart"
+              onClick={() => setCurrentPage('reserve')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            <Button
+              label="Reservas"
+              icon="pi pi-list"
+              onClick={() => setCurrentPage('reservas')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            <Button
+              label="Sair"
+              icon="pi pi-sign-out"
+              onClick={handleLogout}
+              severity="secondary"
+              size="small"
+            />
+          </div>
+        </div>
+        <AdminPage />
+      </div>
+    );
+  }
+
+  // Render Reservas page
+  if (currentPage === 'reservas') {
+    return (
+      <div className="dashboard-container">
+        <div className="dashboard-header-bar">
+          <h1>Reserve Aqui</h1>
+          <div className="header-actions">
+            <Button
+              label="Reserve Aqui"
+              icon="pi pi-shopping-cart"
+              onClick={() => setCurrentPage('reserve')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            {isAdmin && (
+              <Button
+                label="Área Admin"
+                icon="pi pi-cog"
+                onClick={() => setCurrentPage('admin')}
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            )}
+            <Button
+              label="Sair"
+              icon="pi pi-sign-out"
+              onClick={handleLogout}
+              severity="secondary"
+              size="small"
+            />
+          </div>
+        </div>
+        <ReservasPage />
+      </div>
+    );
+  }
+
   if (currentStep === 'cars' && localizationData) {
     return (
       <div className="dashboard-container">
         <div className="dashboard-header-bar">
-          <h1>Sistema de Vendas</h1>
-          <Button
-            label="Sair"
-            icon="pi pi-sign-out"
-            onClick={handleLogout}
-            severity="secondary"
-            size="small"
-          />
+          <h1>Reserve Aqui</h1>
+          <div className="header-actions">
+            <Button
+              label="Reservas"
+              icon="pi pi-list"
+              onClick={() => setCurrentPage('reservas')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            {isAdmin && (
+              <Button
+                label="Área Admin"
+                icon="pi pi-cog"
+                onClick={() => setCurrentPage('admin')}
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            )}
+            <Button
+              label="Sair"
+              icon="pi pi-sign-out"
+              onClick={handleLogout}
+              severity="secondary"
+              size="small"
+            />
+          </div>
         </div>
         {protocolo && (
           <StepNavigationMenu
@@ -459,10 +586,28 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <Card className="dashboard-card">
-        <div className="dashboard-header">
-          <div className="header-top">
-            <h1>Sistema de Vendas</h1>
+      <div className="dashboard-header">
+        <div className="header-top">
+          <h1>Reserve Aqui</h1>
+          <div className="header-actions">
+            <Button
+              label="Reservas"
+              icon="pi pi-list"
+              onClick={() => setCurrentPage('reservas')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            {isAdmin && (
+              <Button
+                label="Área Admin"
+                icon="pi pi-cog"
+                onClick={() => setCurrentPage('admin')}
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            )}
             <Button
               label="Sair"
               icon="pi pi-sign-out"
@@ -471,58 +616,45 @@ const Dashboard: React.FC = () => {
               size="small"
             />
           </div>
-          <p>Bem-vindo, {user?.login}!</p>
         </div>
+        <p>Bem-vindo, {user?.login}!</p>
+      </div>
 
-        <div className="dashboard-content">
-          {!protocolo ? (
-            <div className="content-placeholder">
-              <h3>Bem-vindo ao Painel de Vendas</h3>
-              <p>Para iniciar um atendimento, clique no botão abaixo.</p>
-              <Button
-                label="Iniciar Atendimento"
-                icon="pi pi-play"
-                onClick={handleShowTokenModal}
-                className="start-attendance-btn"
+      <div className="dashboard-content">
+        {isInitializingAttendance ? (
+          <div className="content-placeholder">
+            <h3>Iniciando atendimento...</h3>
+            <p>Aguarde enquanto o sistema prepara o atendimento.</p>
+          </div>
+        ) : currentStep === 'localization' ? (
+          <>
+            {protocolo && (
+              <StepNavigationMenu
+                currentStep={currentStep}
+                currentStepIndex={currentStepIndex}
+                onStepChange={handleStepChange}
               />
-            </div>
-          ) : currentStep === 'localization' ? (
-            <>
-              {protocolo && (
-                <StepNavigationMenu
-                  currentStep={currentStep}
-                  currentStepIndex={currentStepIndex}
-                  onStepChange={handleStepChange}
-                />
-              )}
-              <LocalizationForm
-                onSuccess={(data) => handleLocalizationSuccess(data as unknown as LocalizationFormData)}
-                onAbort={handleLocalizationAbort}
-                agencyCode={agencyCode}
-                protocolo={protocolo}
-              />
-            </>
-          ) : (
-            <div className="content-placeholder">
-              <h3>Erro ao carregar dados</h3>
-              <p>Os dados de localização não estão disponíveis.</p>
-              <Button
-                label="Voltar ao formulário"
-                icon="pi pi-arrow-left"
-                onClick={() => setCurrentStep('localization')}
-                severity="secondary"
-              />
-            </div>
-          )}
-        </div>
-      </Card>
-
-      <StartAttendanceModal
-        visible={showTokenModal}
-        onClose={() => setShowTokenModal(false)}
-        onSuccess={handleTokenSuccess}
-        agencyCode={agencyCode}
-      />
+            )}
+            <LocalizationForm
+              onSuccess={(data) => handleLocalizationSuccess(data as unknown as LocalizationFormData)}
+              onAbort={handleLocalizationAbort}
+              agencyCode={agencyCode}
+              protocolo={protocolo}
+            />
+          </>
+        ) : (
+          <div className="content-placeholder">
+            <h3>Erro ao carregar dados</h3>
+            <p>Os dados de localização não estão disponíveis.</p>
+            <Button
+              label="Voltar ao formulário"
+              icon="pi pi-arrow-left"
+              onClick={() => setCurrentStep('localization')}
+              severity="secondary"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

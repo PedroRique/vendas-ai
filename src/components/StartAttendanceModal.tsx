@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
@@ -7,14 +6,12 @@ import { apiService } from '../services/api';
 import './StartAttendanceModal.scss';
 
 interface StartAttendanceModalProps {
-  visible: boolean;
   onClose: () => void;
   onSuccess: (protocolo: string) => void;
   agencyCode: number;
 }
 
 const StartAttendanceModal: React.FC<StartAttendanceModalProps> = ({
-  visible,
   onClose,
   onSuccess,
   agencyCode,
@@ -74,17 +71,13 @@ const StartAttendanceModal: React.FC<StartAttendanceModalProps> = ({
   };
 
   return (
-    <>
+    <div className="start-attendance-page">
       <Toast ref={toast} />
-      <Dialog
-        header="Token de Atendimento ao Cliente"
-        visible={visible}
-        onHide={handleClose}
-        modal
-        className="start-attendance-dialog"
-        style={{ width: '450px' }}
-        closable={!isLoading}
-      >
+      <div className="start-attendance-content">
+        <div className="start-attendance-header">
+          <h1>Token de Atendimento ao Cliente</h1>
+        </div>
+
         <form onSubmit={handleSubmit} className="token-form">
           <div className="form-field">
             <label htmlFor="token" className="form-label">
@@ -128,8 +121,8 @@ const StartAttendanceModal: React.FC<StartAttendanceModalProps> = ({
             />
           </div>
         </form>
-      </Dialog>
-    </>
+      </div>
+    </div>
   );
 };
 

@@ -1,17 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import dayjs from 'dayjs';
 import { localizationService, type Partner, type LocationPlace } from '../services/localization';
+import type { Agency } from '../services/api';
 import { useAuth } from './useAuth';
 
 interface UseLocalizationReturn {
-  // Partners
-  partners: Partner[];
-  partnerFiltered: Partner[];
-  selectedPartner: Partner | null;
-  partnerInput: string;
-  setPartnerInput: (value: string) => void;
-  selectPartner: (partner: Partner) => void;
-  clearPartner: () => void;
+  // Locadoras
+  locadoras: Agency[];
+  selectedLocadoras: string[];
+  setSelectedLocadoras: (locadoras: string[]) => void;
+  isLoadingLocadoras: boolean;
   
   // Franchise KM
   franchiseKmList: Partner[];
@@ -62,11 +60,10 @@ interface UseLocalizationReturn {
 export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn => {
   useAuth(); // Hook para manter o contexto, mas não precisamos do user aqui
   
-  // Partners
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [partnerFiltered, setPartnerFiltered] = useState<Partner[]>([]);
-  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
-  const [partnerInput, setPartnerInput] = useState('');
+  // Locadoras
+  const [locadoras, setLocadoras] = useState<Agency[]>([]);
+  const [selectedLocadoras, setSelectedLocadoras] = useState<string[]>([]);
+  const [isLoadingLocadoras, setIsLoadingLocadoras] = useState(false);
   
   // Franchise KM
   const [franchiseKmList, setFranchiseKmList] = useState<Partner[]>([]);
@@ -115,78 +112,76 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
 
-  // Load partners on mount
+  // Load locadoras on mount
   useEffect(() => {
-    const loadPartners = async () => {
+    const loadLocadoras = async () => {
+      setIsLoadingLocadoras(true);
+      try {
+        const locadorasList = await localizationService.getLocadoras();
+        // Filtrar apenas as locadoras permitidas: Movida, Unidas, Localiza ou Foco
+        // Os nomes devem corresponder exatamente ao campo nomeAgencia dos carros
+        const allowedLocadoras = ['Movida', 'Unidas', 'Localiza', 'Foco'];
+        const filtered = locadorasList.filter(loc => {
+          const nome = loc.nome || loc.nomeAgencia || '';
+          return allowedLocadoras.some(allowed => {
+            const nomeLower = nome.toLowerCase().trim();
+            const allowedLower = allowed.toLowerCase().trim();
+            return nomeLower === allowedLower || nomeLower.includes(allowedLower) || allowedLower.includes(nomeLower);
+          });
+        });
+        
+        // Garantir que os nomes sejam exatamente como aparecem nos carros
+        const normalized = filtered.map(loc => {
+          const nome = loc.nome || loc.nomeAgencia || '';
+          const nomeLower = nome.toLowerCase().trim();
+          
+          // Normalizar para o nome exato
+          if (nomeLower.includes('movida')) return { ...loc, nome: 'Movida', nomeAgencia: 'Movida' };
+          if (nomeLower.includes('unidas')) return { ...loc, nome: 'Unidas', nomeAgencia: 'Unidas' };
+          if (nomeLower.includes('localiza')) return { ...loc, nome: 'Localiza', nomeAgencia: 'Localiza' };
+          if (nomeLower.includes('foco')) return { ...loc, nome: 'Foco', nomeAgencia: 'Foco' };
+          
+          return loc;
+        });
+        
+        setLocadoras(normalized);
+      } catch (error) {
+        console.error('Error loading locadoras:', error);
+        // Em caso de erro, usar lista fixa como fallback
+        setLocadoras([
+          { codigo: 100, nome: 'Movida', nomeAgencia: 'Movida' },
+          { codigo: 105, nome: 'Unidas', nomeAgencia: 'Unidas' },
+          { codigo: 103, nome: 'Localiza', nomeAgencia: 'Localiza' },
+          { codigo: 114, nome: 'Foco', nomeAgencia: 'Foco' },
+        ]);
+      } finally {
+        setIsLoadingLocadoras(false);
+      }
+    };
+
+    loadLocadoras();
+  }, []);
+
+  // Load franchise KM list on mount
+  useEffect(() => {
+    const loadFranchiseKm = async () => {
       setIsLoading(true);
       try {
         const partnersList = await localizationService.getPartners('');
-        const filtered = partnersList.filter(p => p.categoria === 'Parceria');
-        setPartners(filtered);
-        
         const grouped = localizationService.groupFranchiseKmByCategory(partnersList);
         setFranchiseKmListByCategory(grouped);
         
         // Default to MensalFlex
         setFranchiseKmList(grouped['MensalFlex'] || []);
       } catch (error) {
-        console.error('Error loading partners:', error);
+        console.error('Error loading franchise KM:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadPartners();
+    loadFranchiseKm();
   }, []);
-
-  // Filter partners when input changes
-  useEffect(() => {
-    if (partnerInput.length >= 1) {
-      const filtered = localizationService.filterPartners(partners, partnerInput);
-      setPartnerFiltered(filtered);
-    } else {
-      setPartnerFiltered([]);
-    }
-  }, [partnerInput, partners]);
-
-  // Update franchise list when partner changes
-  useEffect(() => {
-    if (selectedPartner) {
-      const codigo99Movida = '1829626';
-      const codigoUberMovida = '971697';
-      const codigo99Moover = '6788009';
-      const codigoUberMoover = '6788053';
-      const codigoMovidaCargo = '6788075';
-      
-      let category = 'MensalFlex';
-      
-      if (
-        selectedPartner.codigo === codigo99Movida ||
-        selectedPartner.codigo === codigoUberMovida ||
-        selectedPartner.codigo === codigo99Moover ||
-        selectedPartner.codigo === codigoUberMoover
-      ) {
-        category = 'App';
-      } else if (selectedPartner.codigo === codigoMovidaCargo) {
-        category = 'KM';
-      }
-      
-      setFranchiseKmList(franchiseKmListByCategory[category] || []);
-    } else {
-      setFranchiseKmList(franchiseKmListByCategory['MensalFlex'] || []);
-    }
-  }, [selectedPartner, franchiseKmListByCategory]);
-
-  const selectPartner = useCallback((partner: Partner) => {
-    setSelectedPartner(partner);
-    setPartnerInput(partner.descricao);
-  }, []);
-
-  const clearPartner = useCallback(() => {
-    setSelectedPartner(null);
-    setPartnerInput('');
-    setFranchiseKmList(franchiseKmListByCategory['MensalFlex'] || []);
-  }, [franchiseKmListByCategory]);
 
   const selectGetCarPlace = useCallback((place: LocationPlace) => {
     setGetCarPlace(place);
@@ -211,8 +206,8 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
 
     setIsLoadingLocations(true);
     try {
-      const parceria = selectedPartner?.codigo;
-      const response = await localizationService.getLocations(search, agencyCode, parceria);
+      const locadorasToUse = selectedLocadoras.length > 0 ? selectedLocadoras : undefined;
+      const response = await localizationService.getLocations(search, agencyCode, locadorasToUse);
       
       // Process stores
       const stores: LocationPlace[] = response.TodasLojas.map(loja => ({
@@ -237,7 +232,7 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
     } finally {
       setIsLoadingLocations(false);
     }
-  }, [agencyCode, selectedPartner]);
+  }, [agencyCode, selectedLocadoras]);
 
   // Date validation and updates
   const handleGetCarDateChange = useCallback((date: Date) => {
@@ -348,14 +343,11 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
   }, [retrieveDate, getCarDate]);
 
   return {
-    // Partners
-    partners,
-    partnerFiltered,
-    selectedPartner,
-    partnerInput,
-    setPartnerInput,
-    selectPartner,
-    clearPartner,
+    // Locadoras
+    locadoras,
+    selectedLocadoras,
+    setSelectedLocadoras,
+    isLoadingLocadoras,
     
     // Franchise KM
     franchiseKmList,

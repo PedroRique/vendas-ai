@@ -1,4 +1,4 @@
-import { apiService, type Partner, type LocationsResponse, type AvailableCarsResponse, type VerifyAvailableCarsRequest, type GetLocationsRequest } from './api';
+import { apiService, type Partner, type LocationsResponse, type AvailableCarsResponse, type VerifyAvailableCarsRequest, type GetLocationsRequest, type Agency } from './api';
 
 // Re-export Partner for convenience
 export type { Partner } from './api';
@@ -38,12 +38,25 @@ export class LocalizationService {
   }
 
   /**
+   * Busca lista de locadoras disponíveis
+   */
+  async getLocadoras(): Promise<Agency[]> {
+    try {
+      const response = await apiService.getAvailableAgencies();
+      return response.dados || [];
+    } catch (error) {
+      console.error('Error fetching locadoras:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Busca locais (aeroportos, cidades, bairros, lojas)
    */
   async getLocations(
     search: string,
     codAgencia: number | null | undefined,
-    parceria?: string
+    locadoras?: string[]
   ): Promise<LocationsResponse['dados']> {
     try {
       if (search.length < 3) {
@@ -71,9 +84,9 @@ export class LocalizationService {
         requestData.codAgencia = 100;
       }
 
-      // Incluir parceria se fornecida
-      if (parceria) {
-        requestData.parceria = parceria;
+      // Incluir locadoras se fornecidas
+      if (locadoras && locadoras.length > 0) {
+        requestData.locadoras = locadoras;
       }
 
       const response = await apiService.getLocations(requestData);
@@ -93,7 +106,12 @@ export class LocalizationService {
     data: VerifyAvailableCarsRequest
   ): Promise<AvailableCarsResponse['dados']> {
     try {
-      const response = await apiService.verifyAvailableCars(codigoAgencia, data);
+      // Remover parceria se locadoras estiverem presentes
+      const requestData = { ...data };
+      if (requestData.locadoras && requestData.locadoras.length > 0) {
+        delete requestData.parceria;
+      }
+      const response = await apiService.verifyAvailableCars(codigoAgencia, requestData);
       return response.dados;
     } catch (error) {
       console.error('Error verifying available cars:', error);

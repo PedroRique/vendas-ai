@@ -1,0 +1,99 @@
+.booking-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .booking-header {
+    margin-bottom: 20px;
+
+    .status-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+
+      li {
+        strong {
+          font-weight: 500;
+          color: #333;
+        }
+      }
+    }
+  }
+
+  .booking-content {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+
+    .booking-left {
+      flex: 1;
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          padding: 8px 0;
+          border-bottom: 1px solid #f0f0f0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          strong {
+            font-weight: 500;
+            color: #333;
+          }
+        }
+      }
+    }
+
+    .booking-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 15px;
+
+      .booking-price {
+        text-align: right;
+
+        .price {
+          font-size: 24px;
+          font-weight: 600;
+          color: #333;
+          margin: 0 0 5px 0;
+        }
+
+        .payment-card {
+          font-size: 12px;
+          color: #666;
+          margin: 0;
+        }
+      }
+
+      .btn-logs {
+        min-width: 150px;
+      }
+    }
+  }
+
+  .booking-footer {
+    display: flex;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+
+    .btn-voucher,
+    .btn-update,
+    .btn-cancel {
+      flex: 1;
+    }
+  }
+}
+

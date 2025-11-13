@@ -1,0 +1,39 @@
+.cancel-booking-modal {
+  .cancel-booking-content {
+    p {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .form-field {
+      margin-bottom: 20px;
+
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+
+        .required {
+          color: #e74c3c;
+        }
+      }
+
+      .reason-dropdown {
+        width: 100%;
+      }
+
+      .observations-textarea {
+        width: 100%;
+      }
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 30px;
+    }
+  }
+}
+
