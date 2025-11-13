@@ -1,38 +1,44 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Toast } from 'primereact/toast';
-import { ToggleButton } from 'primereact/togglebutton';
-import { Menu } from 'primereact/menu';
-import { apiService, type AdminUser } from '../services/api';
-import { useAuth } from '../hooks/useAuth';
-import CreateEditUserModal from './CreateEditUserModal';
-import './AdminPage.scss';
+import { Button } from "primereact/button";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
+import { InputText } from "primereact/inputtext";
+import { Menu } from "primereact/menu";
+import { Toast } from "primereact/toast";
+import { ToggleButton } from "primereact/togglebutton";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { apiService, type AdminUser } from "../services/api";
+import "./AdminPage.scss";
+import CreateEditUserModal from "./CreateEditUserModal";
 
 const AdminPage: React.FC = () => {
-  const { user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const toast = React.useRef<Toast>(null);
   const menuRef = React.useRef<Menu>(null);
-  const [currentMenuUser, setCurrentMenuUser] = useState<AdminUser | null>(null);
+  const [currentMenuUser, setCurrentMenuUser] = useState<AdminUser | null>(
+    null
+  );
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [profiles, setProfiles] = useState<Array<{ tipoUsuarioId: number; nome: string }>>([]);
+  const [profiles, setProfiles] = useState<
+    Array<{ tipoUsuarioId: number; nome: string }>
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchKey, setSearchKey] = useState('');
+  const [searchKey, setSearchKey] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-  const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [searchTimeout, setSearchTimeout] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   useEffect(() => {
     if (!isAdmin) {
       toast.current?.show({
-        severity: 'warn',
-        summary: 'Acesso Negado',
-        detail: 'Você não tem permissão para acessar esta área.',
+        severity: "warn",
+        summary: "Acesso Negado",
+        detail: "Você não tem permissão para acessar esta área.",
       });
       return;
     }
@@ -70,7 +76,7 @@ const AdminPage: React.FC = () => {
       const response = await apiService.getProfiles();
       setProfiles(response.dados || []);
     } catch (error) {
-      console.error('Error loading profiles:', error);
+      console.error("Error loading profiles:", error);
     }
   };
 
@@ -82,15 +88,16 @@ const AdminPage: React.FC = () => {
         page: currentPage,
         qtPorPagina: rowsPerPage,
       });
-      
+
       setUsers(response.dados.Itens || []);
       setTotalItems(response.dados.TotalItens || 0);
     } catch (error: unknown) {
-      console.error('Error loading users:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar usuários.';
+      console.error("Error loading users:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao carregar usuários.";
       toast.current?.show({
-        severity: 'error',
-        summary: 'Erro',
+        severity: "error",
+        summary: "Erro",
         detail: errorMessage,
       });
     } finally {
@@ -112,16 +119,17 @@ const AdminPage: React.FC = () => {
     try {
       await apiService.resetPassword(user.usuarioId);
       toast.current?.show({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Senha resetada com sucesso.',
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Senha resetada com sucesso.",
       });
     } catch (error: unknown) {
-      console.error('Error resetting password:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao resetar senha.';
+      console.error("Error resetting password:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao resetar senha.";
       toast.current?.show({
-        severity: 'error',
-        summary: 'Erro',
+        severity: "error",
+        summary: "Erro",
         detail: errorMessage,
       });
     }
@@ -137,19 +145,28 @@ const AdminPage: React.FC = () => {
       });
 
       // Update local state
-      setUsers(users.map(u => u.usuarioId === user.usuarioId ? updatedUser.dados : u));
-      
+      setUsers(
+        users.map((u) =>
+          u.usuarioId === user.usuarioId ? updatedUser.dados : u
+        )
+      );
+
       toast.current?.show({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: updatedUser.dados.ativo ? 'Usuário ativado com sucesso.' : 'Usuário desativado com sucesso.',
+        severity: "success",
+        summary: "Sucesso",
+        detail: updatedUser.dados.ativo
+          ? "Usuário ativado com sucesso."
+          : "Usuário desativado com sucesso.",
       });
     } catch (error: unknown) {
-      console.error('Error toggling user:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao alterar status do usuário.';
+      console.error("Error toggling user:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Erro ao alterar status do usuário.";
       toast.current?.show({
-        severity: 'error',
-        summary: 'Erro',
+        severity: "error",
+        summary: "Erro",
         detail: errorMessage,
       });
       // Reload to revert state
@@ -166,8 +183,8 @@ const AdminPage: React.FC = () => {
   const actionBodyTemplate = (rowData: AdminUser) => {
     const menuItems = [
       {
-        label: 'Editar',
-        icon: 'pi pi-pencil',
+        label: "Editar",
+        icon: "pi pi-pencil",
         command: () => {
           if (currentMenuUser) {
             handleEditUser(currentMenuUser);
@@ -175,8 +192,8 @@ const AdminPage: React.FC = () => {
         },
       },
       {
-        label: 'Resetar Senha',
-        icon: 'pi pi-key',
+        label: "Resetar Senha",
+        icon: "pi pi-key",
         command: () => {
           if (currentMenuUser) {
             handleResetPassword(currentMenuUser);
@@ -216,8 +233,8 @@ const AdminPage: React.FC = () => {
   const accessedBodyTemplate = (rowData: AdminUser) => {
     return (
       <i
-        className={`pi ${rowData.acessado ? 'pi-circle' : 'pi-circle-fill'}`}
-        style={{ color: rowData.acessado ? '#6c757d' : '#28a745' }}
+        className={`pi ${rowData.acessado ? "pi-circle" : "pi-circle-fill"}`}
+        style={{ color: rowData.acessado ? "#6c757d" : "#28a745" }}
       />
     );
   };
@@ -285,35 +302,42 @@ const AdminPage: React.FC = () => {
               emptyMessage="Nenhum usuário encontrado"
               className="users-table"
             >
-              <Column field="usuarioId" header="#ID" sortable style={{ width: '80px' }} />
+              <Column
+                field="usuarioId"
+                header="#ID"
+                sortable
+                style={{ width: "80px" }}
+              />
               <Column
                 field="nome"
                 header="Nome"
                 sortable
-                body={(rowData) => `${rowData.nome} ${rowData.sobrenome || ''}`.trim()}
+                body={(rowData) =>
+                  `${rowData.nome} ${rowData.sobrenome || ""}`.trim()
+                }
               />
               <Column
                 field="tipoUsuario.nome"
                 header="Perfil"
                 sortable
-                body={(rowData) => rowData.tipoUsuario?.nome || 'N/A'}
+                body={(rowData) => rowData.tipoUsuario?.nome || "N/A"}
               />
               <Column field="email" header="Email" sortable />
               <Column field="nomeLogin" header="Login" sortable />
               <Column
                 header="Acessado"
                 body={accessedBodyTemplate}
-                style={{ width: '100px', textAlign: 'center' }}
+                style={{ width: "100px", textAlign: "center" }}
               />
               <Column
                 header="Ativo"
                 body={statusBodyTemplate}
-                style={{ width: '120px', textAlign: 'center' }}
+                style={{ width: "120px", textAlign: "center" }}
               />
               <Column
                 header="Ações"
                 body={actionBodyTemplate}
-                style={{ width: '80px', textAlign: 'center' }}
+                style={{ width: "80px", textAlign: "center" }}
               />
             </DataTable>
           </>
@@ -335,4 +359,3 @@ const AdminPage: React.FC = () => {
 };
 
 export default AdminPage;
-

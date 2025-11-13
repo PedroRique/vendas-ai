@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
-import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
-import { Dialog } from 'primereact/dialog';
-import { Dropdown } from 'primereact/dropdown';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { apiService, type Booking, type CancellationReason } from '../services/api';
-import CancelBookingModal from './CancelBookingModal';
-import UpdateBookingModal from './UpdateBookingModal';
-import dayjs from 'dayjs';
-import './BookingItem.scss';
+import dayjs from "dayjs";
+import { Button } from "primereact/button";
+import { Toast } from "primereact/toast";
+import React, { useState } from "react";
+import { apiService, type Booking } from "../services/api";
+import "./BookingItem.scss";
+import CancelBookingModal from "./CancelBookingModal";
+import UpdateBookingModal from "./UpdateBookingModal";
 
 interface BookingItemProps {
   booking: Booking;
@@ -16,14 +13,20 @@ interface BookingItemProps {
   agencyCode: number;
 }
 
-const BookingItem: React.FC<BookingItemProps> = ({ booking, onRefresh, agencyCode }) => {
+const BookingItem: React.FC<BookingItemProps> = ({
+  booking,
+  onRefresh,
+  agencyCode,
+}) => {
   const toast = React.useRef<Toast>(null);
   const [isDownloadingLogs, setIsDownloadingLogs] = useState(false);
   const [isResendingVoucher, setIsResendingVoucher] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
-  const canEditOrCancel = booking.statusReserva.nome === 'Booked' || booking.statusReserva.nome === 'Confirmada';
+  const canEditOrCancel =
+    booking.statusReserva.nome === "Booked" ||
+    booking.statusReserva.nome === "Confirmada";
   const bookingCode = booking.codigoReservaAgencia || booking.codigoReserva;
 
   const handleDownloadLogs = async () => {
@@ -31,26 +34,29 @@ const BookingItem: React.FC<BookingItemProps> = ({ booking, onRefresh, agencyCod
     try {
       const blob = await apiService.getLogFile(bookingCode);
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `${bookingCode}_logs.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast.current?.show({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Logs baixados com sucesso.',
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Logs baixados com sucesso.",
       });
     } catch (error: unknown) {
-      console.error('Error downloading logs:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao baixar logs.';
+      console.error("Error downloading logs:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao baixar logs.";
       toast.current?.show({
-        severity: 'error',
-        summary: 'Erro',
-        detail: errorMessage.includes('404') ? 'Logs da reserva não encontrados.' : errorMessage,
+        severity: "error",
+        summary: "Erro",
+        detail: errorMessage.includes("404")
+          ? "Logs da reserva não encontrados."
+          : errorMessage,
       });
     } finally {
       setIsDownloadingLogs(false);
@@ -62,16 +68,17 @@ const BookingItem: React.FC<BookingItemProps> = ({ booking, onRefresh, agencyCod
     try {
       await apiService.resendVoucher(bookingCode);
       toast.current?.show({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Voucher reenviado com sucesso.',
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Voucher reenviado com sucesso.",
       });
     } catch (error: unknown) {
-      console.error('Error resending voucher:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao reenviar voucher.';
+      console.error("Error resending voucher:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao reenviar voucher.";
       toast.current?.show({
-        severity: 'error',
-        summary: 'Erro',
+        severity: "error",
+        summary: "Erro",
         detail: errorMessage,
       });
     } finally {
@@ -80,14 +87,14 @@ const BookingItem: React.FC<BookingItemProps> = ({ booking, onRefresh, agencyCod
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   };
 
   const formatDate = (dateString: string) => {
-    return dayjs(dateString).format('DD/MM/YYYY HH:mm');
+    return dayjs(dateString).format("DD/MM/YYYY HH:mm");
   };
 
   return (
@@ -131,7 +138,9 @@ const BookingItem: React.FC<BookingItemProps> = ({ booking, onRefresh, agencyCod
 
           <div className="booking-right">
             <div className="booking-price">
-              <p className="price">{formatCurrency(booking.valorTotalApurado)}</p>
+              <p className="price">
+                {formatCurrency(booking.valorTotalApurado)}
+              </p>
               <p className="payment-card">ou até 10x no cartão</p>
             </div>
             <Button
@@ -200,4 +209,3 @@ const BookingItem: React.FC<BookingItemProps> = ({ booking, onRefresh, agencyCod
 };
 
 export default BookingItem;
-

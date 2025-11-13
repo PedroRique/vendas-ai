@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
+import React, { useState } from 'react';
 import { apiService, type Booking } from '../services/api';
 import LocalizationForm from './LocalizationForm';
 import './UpdateBookingModal.scss';
@@ -21,7 +21,7 @@ const UpdateBookingModal: React.FC<UpdateBookingModalProps> = ({
   onSuccess,
 }) => {
   const toast = React.useRef<Toast>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [, setIsUpdating] = useState(false);
 
   const handleLocalizationSuccess = async (data: Record<string, unknown>) => {
     setIsUpdating(true);
@@ -30,8 +30,8 @@ const UpdateBookingModal: React.FC<UpdateBookingModalProps> = ({
       const bookingCode = booking.codigoReservaAgencia || booking.codigoReserva;
 
       const updateData = {
-        dataHoraRetirada: localization.dataHoraRetirada,
-        dataHoraDevolucao: localization.dataHoraDevolucao,
+        dataHoraRetirada: localization.dataHoraRetirada as string | undefined,
+        dataHoraDevolucao: localization.dataHoraDevolucao as string | undefined,
         localRetirada: Array.isArray(localization.locaisRetirada)
           ? localization.locaisRetirada[0]
           : localization.locaisRetirada,
