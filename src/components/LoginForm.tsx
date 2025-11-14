@@ -44,7 +44,7 @@ const LoginForm: React.FC = () => {
     }
 
     try {
-      await authLogin({ login, senha: password });
+      await authLogin({ loginName: login, password });
       // O redirecionamento será feito pelo useEffect
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro ao fazer login');
@@ -73,7 +73,7 @@ const LoginForm: React.FC = () => {
     try {
       await createPassword(login, newPassword);
       // Após criar a senha, fazer login automaticamente
-      await authLogin({ login, senha: newPassword });
+      await authLogin({ loginName: login, password: newPassword });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro ao criar senha');
     } finally {

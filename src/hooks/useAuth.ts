@@ -1,15 +1,20 @@
-import { useEffect, useState } from "react";
-import { authService, type AuthState } from "../services/auth";
+import { useEffect, useState } from 'react';
+import { authService, type AuthState } from '../services/auth';
 
 export const useAuth = () => {
-  const [authState, setAuthState] = useState<AuthState>(authService.getState());
+  const [authState, setAuthState] = useState<AuthState>(
+    authService.getState()
+  );
 
   useEffect(() => {
     const unsubscribe = authService.subscribe(setAuthState);
     return unsubscribe;
   }, []);
 
-  const login = async (credentials: { login: string; senha: string }) => {
+  const login = async (credentials: {
+    loginName: string;
+    password: string;
+  }) => {
     return authService.login(credentials);
   };
 
@@ -17,25 +22,16 @@ export const useAuth = () => {
     return authService.logout();
   };
 
-  const checkFirstAccess = async (login: string) => {
-    return authService.checkFirstAccess(login);
+  const checkFirstAccess = async (loginName: string) => {
+    return authService.checkFirstAccess(loginName);
   };
 
-  const createPassword = async (emailOuNomeLogin: string, senha: string) => {
-    return authService.createPassword(emailOuNomeLogin, senha);
+  const createPassword = async (loginName: string, password: string) => {
+    return authService.createPassword(loginName, password);
   };
 
   const isAdmin = (): boolean => {
-    const user = authState.user;
-    if (!user) return false;
-    
-    // ProfileEnum.ADMIN = 1 (baseado no sistema antigo)
-    if ('tipoUsuario' in user && typeof user.tipoUsuario === 'object' && user.tipoUsuario !== null) {
-      const tipoUsuario = user.tipoUsuario as { tipoUsuarioId?: number; [key: string]: unknown };
-      return tipoUsuario.tipoUsuarioId === 1;
-    }
-    
-    return false;
+    return authService.isAdmin();
   };
 
   return {

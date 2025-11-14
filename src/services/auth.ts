@@ -1,8 +1,19 @@
-import { apiService, type LoginRequest, type LoginResponse } from './api';
+import {
+  apiService,
+  type LoginRequest,
+  type LoginResponse,
+  type CreatePasswordRequest,
+} from './api';
 
 export interface User {
+  id: number;
+  loginName: string;
+  name: string;
+  surname: string;
+  email: string;
   token: string;
-  login: string;
+  hoursUntilTokenExpired: number;
+  role?: string;
   [key: string]: unknown;
 }
 
@@ -25,13 +36,13 @@ class AuthService {
   // Gerenciamento de estado
   private notifyListeners() {
     const state = this.getState();
-    this.listeners.forEach(listener => listener(state));
+    this.listeners.forEach((listener) => listener(state));
   }
 
   subscribe(listener: (state: AuthState) => void) {
     this.listeners.push(listener);
     return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
+      this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
 
@@ -72,11 +83,25 @@ class AuthService {
   async login(credentials: LoginRequest): Promise<void> {
     try {
       const response: LoginResponse = await apiService.login(credentials);
-      
-      if (response.dados && response.dados.token) {
+
+      // Verificar se há erros na resposta
+      if (response.errors && response.errors.length > 0) {
+        const errorMessage =
+          response.errors[0]?.message || 'Erro ao fazer login';
+        throw new Error(errorMessage);
+      }
+
+      // Verificar se o login foi bem-sucedido
+      if (response.token && response.id) {
         this.user = {
-          ...response.dados,
-          login: credentials.login,
+          id: response.id,
+          loginName: response.loginName || credentials.loginName,
+          name: response.name || '',
+          surname: response.surname || '',
+          email: response.email || '',
+          token: response.token,
+          hoursUntilTokenExpired: response.hoursUntilTokenExpired,
+          role: response.role || 'operator',
         };
         this.saveUserToStorage(this.user);
         this.notifyListeners();
@@ -93,18 +118,44 @@ class AuthService {
     this.clearUser();
   }
 
-  async checkFirstAccess(login: string): Promise<boolean> {
+  async checkFirstAccess(loginName: string): Promise<boolean> {
     try {
-      const response = await apiService.checkFirstAccess(login);
-      return response.dados;
+      const response = await apiService.checkFirstAccess(loginName);
+      
+      // Verificar se há erros
+      if (response.errors && response.errors.length > 0) {
+        console.error('Error checking first access:', response.errors);
+        return false;
+      }
+      
+      return response.isFirstAccess;
     } catch (error) {
       console.error('Error checking first access:', error);
       return false;
     }
   }
 
-  async createPassword(emailOuNomeLogin: string, senha: string): Promise<void> {
-    await apiService.createPassword({ emailOuNomeLogin, senha });
+  async createPassword(
+    loginName: string,
+    password: string
+  ): Promise<void> {
+    const data: CreatePasswordRequest = {
+      loginName,
+      password,
+    };
+    
+    const response = await apiService.createPassword(data);
+    
+    // Verificar se há erros
+    if (response.errors && response.errors.length > 0) {
+      const errorMessage =
+        response.errors[0]?.message || 'Erro ao criar senha';
+      throw new Error(errorMessage);
+    }
+    
+    if (!response.success) {
+      throw new Error('Falha ao criar senha');
+    }
   }
 
   // Getters
@@ -118,6 +169,10 @@ class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.user;
+  }
+
+  isAdmin(): boolean {
+    return this.user?.role === 'administrator';
   }
 }
 
