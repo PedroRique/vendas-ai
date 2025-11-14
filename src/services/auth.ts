@@ -101,7 +101,7 @@ class AuthService {
           email: response.email || '',
           token: response.token,
           hoursUntilTokenExpired: response.hoursUntilTokenExpired,
-          role: response.role || 'operator',
+          role: 'operator', // Valor padrão; role não vem na resposta do login
         };
         this.saveUserToStorage(this.user);
         this.notifyListeners();

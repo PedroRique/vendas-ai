@@ -12,7 +12,7 @@ import ReservasPage from './ReservasPage';
 import AdminPage from './AdminPage';
 import StepNavigationMenu from './StepNavigationMenu';
 import { apiService } from '../services/api';
-import type { BookingResponse } from '../services/api';
+import type { BookingResponse, QuotationRequest } from '../services/api';
 import { formatBooking } from '../utils/formatBooking';
 import type { Car } from '../hooks/useCarFilters';
 import type { Accessory } from './AccessoriesPage';
@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
   const [accessories, setAccessories] = useState<Accessory[]>([]);
   const [protections, setProtections] = useState<Protection[]>([]);
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
-  const [booking, setBooking] = useState<BookingResponse['dados'] | null>(null);
+  const [booking, setBooking] = useState<BookingResponse | null>(null);
   const [protocolo, setProtocolo] = useState<string | null>(null);
   const [isInitializingAttendance, setIsInitializingAttendance] = useState(false);
 
@@ -242,8 +242,8 @@ const Dashboard: React.FC = () => {
           id_carrental: agencyCode,
         });
 
-        const response = await apiService.booking(agencyCode, bookingData);
-        setBooking(response.dados);
+        const response = await apiService.booking(agencyCode, bookingData as QuotationRequest);
+        setBooking(response as unknown as BookingResponse);
         setCurrentStep('finalization');
         setCurrentStepIndex(5);
       } catch (error: unknown) {
@@ -295,8 +295,8 @@ const Dashboard: React.FC = () => {
           id_carrental: agencyCode,
         });
 
-        const response = await apiService.booking(agencyCode, bookingData);
-        setBooking(response.dados);
+        const response = await apiService.booking(agencyCode, bookingData as QuotationRequest);
+        setBooking(response as unknown as BookingResponse);
         setCurrentStep('finalization');
         setCurrentStepIndex(5);
       } catch (error: unknown) {
@@ -573,7 +573,7 @@ const Dashboard: React.FC = () => {
         )}
         <FinalizationPage
           selectedCar={selectedCar}
-          booking={booking}
+          booking={booking as unknown as { codigoReservaAgencia?: string; codigoReserva?: string; [key: string]: unknown }}
           accessories={accessories}
           protections={protections}
           personalData={personalData!}
@@ -617,7 +617,7 @@ const Dashboard: React.FC = () => {
             />
           </div>
         </div>
-        <p>Bem-vindo, {user?.login}!</p>
+        <p>Bem-vindo, {user?.loginName || user?.name}!</p>
       </div>
 
       <div className="dashboard-content">

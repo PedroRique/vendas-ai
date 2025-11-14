@@ -339,6 +339,42 @@ export interface BookingRequest {
   rateQualifier?: string;
 }
 
+// Tipo de compatibilidade para código legado que ainda não foi migrado
+// Este tipo mantém a estrutura antiga da API para permitir migração gradual
+export interface QuotationRequest {
+  dataHoraDevolucao: string;
+  dataHoraRetirada: string;
+  localRetirada: string;
+  localDevolucao: string;
+  ehMensal?: boolean;
+  dadosCliente: {
+    email: string;
+    prefixoNome: string;
+    nome: string;
+    sobrenome: string;
+    dddTelefone: string;
+    telefone: string;
+    dddCelular: string;
+    Celular: string;
+    tipoDocumento: number;
+    documento: string;
+  };
+  codigoAcriss?: string;
+  categoria?: string;
+  opcionais?: Array<Record<string, unknown>>;
+  protecoes?: Array<Record<string, unknown>>;
+  codigoPromocional?: string;
+  codCupom?: string;
+  tarifas?: Array<Record<string, unknown>>;
+  rateQualifier?: string;
+  tokenCotacao?: string;
+  protocolo: string;
+  locaisRetirada?: string[];
+  locaisDevolucao?: string[];
+  codigoReservaAgencia?: string;
+  [key: string]: unknown;
+}
+
 export interface BookingCoverage {
   isRequired: boolean;
   coverageType: string;
@@ -661,6 +697,269 @@ class ApiService {
     });
   }
 
+  // ==================== MÉTODOS DE COMPATIBILIDADE (LEGADO) ====================
+  // Estes métodos mantêm compatibilidade com código legado que ainda não foi migrado
+
+  async getPartners(_tipoTarifa?: string): Promise<PartnersResponse> {
+    // Na nova API não há endpoint de parcerias/tarifas
+    // Parâmetro mantido apenas para compatibilidade com código legado
+    void _tipoTarifa; // Marca explicitamente como não usado
+    return Promise.resolve({ dados: [] });
+  }
+
+  async getAvailableAgencies(): Promise<AvailableAgenciesResponse> {
+    // Na nova API, as locadoras são identificadas por rentalCompanyId
+    // Retornar lista básica com as 4 locadoras disponíveis
+    return Promise.resolve({
+      dados: [
+        { codigo: 1, nome: 'Movida', nomeAgencia: 'Movida' },
+        { codigo: 2, nome: 'Localiza', nomeAgencia: 'Localiza' },
+        { codigo: 3, nome: 'Unidas', nomeAgencia: 'Unidas' },
+        { codigo: 4, nome: 'Foco', nomeAgencia: 'Foco' },
+      ],
+    });
+  }
+
+  async getLocations(
+    data: GetLocationsRequest
+  ): Promise<LocationsResponse> {
+    // Adaptar para usar searchStores da nova API
+    const searchStoresData: SearchStoresRequest = {
+      rentalCompaniesIds: [1, 2, 3, 4], // Todas as locadoras
+      search: data.filtro || '',
+      neighborhood: '',
+      city: '',
+      airport: '',
+      isApp: false,
+    };
+
+    if (data.locadoras && data.locadoras.length > 0) {
+      // Converter nomes de locadoras para IDs se necessário
+      const rentalCompanyMap: Record<string, number> = {
+        movida: 1,
+        localiza: 2,
+        unidas: 3,
+        foco: 4,
+      };
+      searchStoresData.rentalCompaniesIds = data.locadoras
+        .map((loc) => rentalCompanyMap[loc.toLowerCase()])
+        .filter((id) => id !== undefined) as number[];
+    }
+
+    const response = await this.searchStores(searchStoresData);
+
+    // Transformar resposta da nova API para formato legado
+    const locations: LocationsResponse = {
+      dados: {
+        Aeroportos: [],
+        TodasLojas: [],
+        Cidades: [],
+        Bairro: [],
+      },
+    };
+
+    response.rentalCompanies.forEach((company) => {
+      company.stores.forEach((store) => {
+        locations.dados.TodasLojas.push({
+          nome: store.name,
+          sigla: store.acronym,
+          lojas: [store.acronym],
+          qtLojas: 1,
+        });
+
+        if (store.city && !locations.dados.Cidades.find((c) => c.nome === store.city)) {
+          locations.dados.Cidades.push({
+            nome: store.city,
+            sigla: store.city,
+            lojas: company.stores
+              .filter((s) => s.city === store.city)
+              .map((s) => s.acronym),
+            qtLojas: company.stores.filter((s) => s.city === store.city).length,
+          });
+        }
+
+        if (store.neighborhood && !locations.dados.Bairro.find((b) => b.nome === store.neighborhood)) {
+          locations.dados.Bairro.push({
+            nome: store.neighborhood,
+            sigla: store.neighborhood,
+            lojas: company.stores
+              .filter((s) => s.neighborhood === store.neighborhood)
+              .map((s) => s.acronym),
+            qtLojas: company.stores.filter((s) => s.neighborhood === store.neighborhood).length,
+          });
+        }
+
+        if (store.airport) {
+          const airportName = store.airport.name;
+          if (!locations.dados.Aeroportos.find((a) => a.nome === airportName)) {
+            locations.dados.Aeroportos.push({
+              nome: airportName,
+              sigla: store.airport.iata,
+              lojas: company.stores
+                .filter((s) => s.airport?.name === airportName)
+                .map((s) => s.acronym),
+              qtLojas: company.stores.filter((s) => s.airport?.name === airportName).length,
+            });
+          }
+        }
+      });
+    });
+
+    return locations;
+  }
+
+  async verifyAvailableCars(
+    codigoAgencia: number,
+    data: VerifyAvailableCarsRequest
+  ): Promise<AvailableCarsResponse> {
+    void codigoAgencia; // Não usado, mas mantido para compatibilidade
+    // Adaptar para usar getAvailability da nova API
+    // Mapear rentalCompanyId baseado no codigoAgencia ou usar todas
+    const rentalCompanyIds = data.locadoras
+      ? data.locadoras.map((loc) => {
+          const rentalCompanyMap: Record<string, number> = {
+            movida: 1,
+            localiza: 2,
+            unidas: 3,
+            foco: 4,
+          };
+          return rentalCompanyMap[loc.toLowerCase()] || 1;
+        })
+      : [1, 2, 3, 4]; // Todas as locadoras se não especificado
+
+    const availabilityRequests: AvailabilityRequest[] = rentalCompanyIds.map(
+      (rentalCompanyId) => ({
+        rentalCompanyId,
+        pickupDateTime: data.dataHoraRetirada,
+        returnDateTime: data.dataHoraDevolucao,
+        pickupStore: data.locaisRetirada[0] || '',
+        returnStore: data.locaisDevolucao[0] || '',
+        couponCode: data.codCupom,
+        chosenGroups: data.tarifas?.map((t) => t.codigo || '') || [],
+      })
+    );
+
+    const response = await this.getAvailability({
+      availabilities: availabilityRequests,
+    });
+
+    // Verificar se cupom foi enviado na requisição
+    const hasCouponInRequest = !!data.codCupom;
+    
+    // Verificar validade do cupom em todos os veículos
+    let couponValid: boolean | undefined = undefined;
+    if (hasCouponInRequest) {
+      // Se cupom foi enviado, verificar se é válido em pelo menos um veículo
+      couponValid = response.availabilities.some((availability) =>
+        availability.availableVehicles.some(
+          (vehicle) => vehicle.coupon?.valid === true
+        )
+      );
+    }
+
+    // Transformar resposta da nova API para formato legado
+    const availableCars: AvailableCarsResponse = {
+      dados: {
+        veiculosDisponiveis: [],
+        // Só adicionar filtroCupom se cupom foi enviado na requisição
+        filtroCupom: hasCouponInRequest
+          ? {
+              valido: couponValid ?? false,
+            }
+          : undefined,
+      },
+    };
+
+    // Adicionar filtro de valor se disponível
+    let minValue = Infinity;
+    let maxValue = -Infinity;
+
+    response.availabilities.forEach((availability) => {
+      availability.availableVehicles.forEach((vehicle) => {
+        const vehicleValue = vehicle.vehicleData.totalValue || vehicle.vehicleData.bookingValue || 0;
+        if (vehicleValue < minValue) minValue = vehicleValue;
+        if (vehicleValue > maxValue) maxValue = vehicleValue;
+
+        availableCars.dados.veiculosDisponiveis.push({
+          dadosVeiculo: {
+            modelo: vehicle.vehicleData.model,
+            categoria: vehicle.vehicleData.category,
+            grupoVeiculo: vehicle.vehicleData.vehicleGroup,
+            codigoAcriss: vehicle.vehicleData.vehicleGroupAcronym,
+            rateQualifier: vehicle.vehicleData.rateQualifier,
+            codigoVeiculo: vehicle.vehicleData.vehicleCode,
+            numeroPortas: vehicle.vehicleData.numberOfDoors,
+            numeroAssentos: vehicle.vehicleData.numberOfSeats,
+            lugares: vehicle.vehicleData.numberOfSeats,
+            capacidadeMala: vehicle.vehicleData.luggageCapacity,
+            capacidadeBagagem: vehicle.vehicleData.luggageCapacity,
+            arCondicionado: vehicle.vehicleData.hasAirConditioning,
+            temArCondicionado: vehicle.vehicleData.hasAirConditioning,
+            cambioAutomatico: vehicle.vehicleData.isAutomaticTransmission,
+            isAutomatico: vehicle.vehicleData.isAutomaticTransmission,
+            urlImagem: vehicle.vehicleData.imageUrl,
+            imagemUrl: vehicle.vehicleData.imageUrl,
+            nomeAgencia: availability.rentalCompanyName,
+            codigoAgencia: availability.rentalCompanyId,
+            valorTotal: vehicle.vehicleData.totalValue,
+            valorDiaria: vehicle.vehicleData.dailyValue,
+            valorPorDia: vehicle.vehicleData.dailyValue,
+            quantidadeDiarias: vehicle.vehicleData.numberOfDays,
+            numeroDias: vehicle.vehicleData.numberOfDays,
+            valorTotalCalcao: vehicle.vehicleData.totalDepositValue,
+            valorTotalFranquia: vehicle.vehicleData.totalDeductibleValue,
+            tokenCotacao: vehicle.vehicleData.availabilityToken,
+            ehMensal: vehicle.vehicleData.isMonthly,
+            isMensal: vehicle.vehicleData.isMonthly,
+            valorDiariaTotalMensal: vehicle.vehicleData.totalMonthlyDailyRateValue,
+            status: 'Available',
+          },
+          opcionais: vehicle.optionalAddonsData,
+          dadosOpcionais: vehicle.optionalAddonsData?.map((addon) => ({
+            nome: addon.name,
+            descricao: addon.description,
+            codigo: addon.addonCode,
+            valorDiaria: addon.dailyValue,
+            valorTotal: addon.totalValue,
+            quantidadeMaxima: addon.maximumQuantity,
+            quantidadeMaximaDiariasSerCobrado: addon.maximumChargeableDays,
+          } as { nome: string; descricao: string; codigo: string; valorDiaria: number; valorTotal: number; quantidadeMaxima: number; quantidadeMaximaDiariasSerCobrado: number; [key: string]: unknown })) || [],
+          protecoes: vehicle.coveragesData,
+          dadosProtecoes: vehicle.coveragesData?.map((coverage) => ({
+            codigoProtecao: coverage.coverageCode,
+            nome: coverage.name,
+            descricao: coverage.description,
+            obrigatorio: coverage.isRequired,
+            valorTotal: coverage.totalValue,
+            valorDiaria: coverage.dailyValue,
+            ordenacao: coverage.sortOrder,
+            sigla: coverage.acronym,
+          } as { codigoProtecao: string; nome: string; descricao: string; obrigatorio: boolean; valorTotal: number; valorDiaria: number; ordenacao: number; sigla: string; [key: string]: unknown })) || [],
+          pesquisaLocacao: {
+            localRetiradaNome: vehicle.rentalSearch.pickupStoreName,
+            localDevolucaoNome: vehicle.rentalSearch.returnStoreName,
+            localRetiradaSigla: vehicle.rentalSearch.pickupStoreCode,
+            localDevolucaoSigla: vehicle.rentalSearch.returnStoreCode,
+            dataHoraRetirada: vehicle.rentalSearch.pickupDateTime,
+            dataHoraDevolucao: vehicle.rentalSearch.returnDateTime,
+          },
+          rentalCompanyId: availability.rentalCompanyId,
+          rentalCompanyName: availability.rentalCompanyName,
+        });
+      });
+    });
+
+    // Adicionar filtro de valor se houver veículos
+    if (availableCars.dados.veiculosDisponiveis.length > 0 && minValue !== Infinity && maxValue !== -Infinity) {
+      availableCars.dados.filtroValorReserva = {
+        minValorDisponibilidade: minValue,
+        maxValorDisponibilidade: maxValue,
+      };
+    }
+
+    return availableCars;
+  }
+
   // ==================== MÉTODOS DE RESERVA ====================
 
   async createBooking(data: BookingRequest): Promise<BookingResponse> {
@@ -696,6 +995,395 @@ class ApiService {
       body: JSON.stringify(data),
     });
   }
+
+  // ==================== MÉTODOS DE COMPATIBILIDADE PARA RESERVAS ====================
+
+  async editBooking(
+    agencyCode: number,
+    bookingCode: string,
+    updateData: {
+      dataHoraRetirada?: string;
+      dataHoraDevolucao?: string;
+      localRetirada?: string;
+      localDevolucao?: string;
+      [key: string]: unknown;
+    }
+  ): Promise<UpdateBookingResponse> {
+    // Adaptar para usar updateBooking da nova API
+    // Mapear agencyCode para rentalCompanyId (assumindo que agencyCode corresponde ao rentalCompanyId)
+    const rentalCompanyId = agencyCode > 0 && agencyCode <= 4 ? agencyCode : 1;
+
+    const updateRequest: UpdateBookingRequest = {
+      rentalCompanyId,
+      bookingCode,
+      pickupDateTime: updateData.dataHoraRetirada,
+      returnDateTime: updateData.dataHoraDevolucao,
+      pickupStore: updateData.localRetirada as string | undefined,
+      returnStore: updateData.localDevolucao as string | undefined,
+    };
+
+    return this.updateBooking(updateRequest);
+  }
+
+  // Métodos de compatibilidade adicionais
+  async getProfiles(): Promise<{ dados: Profile[] }> {
+    const roles = await this.getRoles();
+    return {
+      dados: roles.roles.map((role, index) => ({
+        tipoUsuarioId: index + 1,
+        nome: role,
+      })),
+    };
+  }
+
+  async getUsers(params?: {
+    key?: string;
+    page?: number;
+    qtPorPagina?: number;
+  }): Promise<{ dados: { Itens: AdminUser[]; PaginaAtual: number; TotalItens: number } }> {
+    const response = await this.getUsersList({
+      search: params?.key,
+      page: params?.page,
+      pageSize: params?.qtPorPagina,
+    });
+    return {
+      dados: {
+        Itens: response.users.map((user) => ({
+          usuarioId: user.id,
+          nome: user.name,
+          sobrenome: user.surname,
+          email: user.email,
+          nomeLogin: user.loginName,
+          ativo: user.active,
+          role: user.role,
+        })),
+        PaginaAtual: response.pagination.currentPage,
+        TotalItens: response.pagination.totalCount,
+      },
+    };
+  }
+
+  async getLogFile(_reservationCode: string): Promise<Blob> {
+    // Na nova API não há endpoint de logs
+    // Retornar blob vazio por enquanto
+    return Promise.resolve(new Blob());
+  }
+
+  async resendVoucher(_codeBooking: string): Promise<unknown> {
+    // Na nova API não há endpoint de reenvio de voucher
+    // Retornar sucesso por enquanto
+    return Promise.resolve({ success: true });
+  }
+
+  async getCancellationReasons(): Promise<{ dados: CancellationReason[] }> {
+    // Na nova API não há endpoint de motivos de cancelamento
+    // Retornar lista padrão
+    return Promise.resolve({
+      dados: [
+        { codigo: '1', descricao: 'Cliente solicitou cancelamento' },
+        { codigo: '2', descricao: 'Problema com pagamento' },
+        { codigo: '3', descricao: 'Mudança de planos' },
+        { codigo: '4', descricao: 'Outro motivo' },
+      ],
+    });
+  }
+
+  async startAttendance(_data: {
+    codigoAgencia: number;
+    tokenAtendimento?: string;
+  }): Promise<{ dados: number }> {
+    // Na nova API não há endpoint de atendimento
+    // Retornar protocolo simulado baseado em timestamp
+    return Promise.resolve({
+      dados: Date.now(),
+    });
+  }
+
+  async booking(
+    idCarrental: number,
+    data: QuotationRequest
+  ): Promise<BookingResponse & { dados: unknown; protocolo: string }> {
+    // Adaptar QuotationRequest para BookingRequest
+    const rentalCompanyId = idCarrental > 0 && idCarrental <= 4 ? idCarrental : 1;
+
+    // Converter dados do cliente
+    const customer: BookingCustomer = {
+      email: data.dadosCliente.email,
+      name: `${data.dadosCliente.nome} ${data.dadosCliente.sobrenome}`,
+      phoneNumber: `+55 (${data.dadosCliente.dddCelular}) ${data.dadosCliente.Celular}`,
+      documentType: String(data.dadosCliente.tipoDocumento),
+      document: data.dadosCliente.documento,
+    };
+
+    // Extrair vehicleCode e vehicleGroup do selectedCar ou usar valores padrão
+    const vehicleCode = (data as unknown as { vehicleCode?: string }).vehicleCode || '';
+    const vehicleGroup = data.categoria || '';
+
+    const bookingRequest: BookingRequest = {
+      rentalCompanyId,
+      pickupDateTime: data.dataHoraRetirada,
+      returnDateTime: data.dataHoraDevolucao,
+      pickupStore: data.localRetirada,
+      returnStore: data.localDevolucao,
+      customer,
+      vehicleCode,
+      vehicleGroup,
+      coverageCode: (data.protecoes?.[0] as { codigo?: string })?.codigo || 'BAS',
+      promotionalCode: data.codigoPromocional,
+      rateQualifier: data.rateQualifier,
+    };
+
+    const response = await this.createBooking(bookingRequest);
+    return {
+      ...response,
+      dados: {
+        reserva: response.booking,
+        totalbasicoReserva: response.basicBookingTotal,
+      },
+      protocolo: data.protocolo,
+    };
+  }
+
+  async quotation(
+    _idCarrental: number,
+    _data: QuotationRequest
+  ): Promise<unknown> {
+    // Na nova API, quotation é substituído por availability
+    // Retornar sucesso por enquanto
+    return Promise.resolve({ success: true });
+  }
+
+  async listBookings(
+    _idCarrental: number,
+    _document: string
+  ): Promise<{ dados: Booking[] }> {
+    // Na nova API não há endpoint de listagem de reservas por documento
+    // Retornar array vazio por enquanto
+    return Promise.resolve({ dados: [] });
+  }
+
+  async findCustomer(_documento: string): Promise<{
+    dados: {
+      clienteId: number;
+      nomeCompleto: string;
+      email: string;
+      telefone: string;
+      documento: string;
+      tipoDocumentoId: number;
+      [key: string]: unknown;
+    };
+  }> {
+    // Na nova API não há endpoint de busca de cliente
+    // Retornar erro ou dados vazios
+    return Promise.reject(new Error('Endpoint não disponível na nova API'));
+  }
+
+  async saveCustomer(_data: {
+    nomeCompleto: string;
+    email: string;
+    telefone: string;
+    documento: string;
+    tipoDocumentoId: number;
+  }): Promise<{ dados: { clienteId: number } }> {
+    // Na nova API não há endpoint de criação de cliente
+    // Retornar ID simulado
+    return Promise.resolve({ dados: { clienteId: Date.now() } });
+  }
+
+  async editCustomer(
+    _clienteId: number,
+    _data: {
+      nomeCompleto: string;
+      email: string;
+      telefone: string;
+      documento: string;
+      tipoDocumentoId: number;
+    }
+  ): Promise<{ dados: unknown }> {
+    // Na nova API não há endpoint de edição de cliente
+    // Retornar sucesso
+    return Promise.resolve({ dados: {} });
+  }
+}
+
+// ==================== TIPOS DE COMPATIBILIDADE (LEGADO) ====================
+// Estes tipos mantêm compatibilidade com código legado que ainda não foi migrado
+
+export interface Partner {
+  codigo: string;
+  descricao: string;
+  categoria: string;
+}
+
+export interface PartnersResponse {
+  dados: Partner[];
+}
+
+export interface GetLocationsRequest {
+  filtro: string;
+  codAgencia?: number;
+  parceria?: string;
+  locadoras?: string[];
+}
+
+export interface Location {
+  nome: string;
+  sigla?: string;
+  lojas?: string[];
+  qtLojas: number;
+}
+
+export interface LocationsResponse {
+  dados: {
+    Aeroportos: Location[];
+    TodasLojas: Location[];
+    Cidades: Location[];
+    Bairro: Location[];
+  };
+}
+
+export interface VerifyAvailableCarsRequest {
+  codCupom?: string;
+  dataHoraDevolucao: string;
+  dataHoraRetirada: string;
+  devolverNoMesmoLocalRetirada: boolean;
+  locaisDevolucao: string[];
+  locaisRetirada: string[];
+  protocolo: string;
+  franquiaKM?: Partner;
+  tarifas: Partner[];
+  parceria?: Partner;
+  locadoras?: string[];
+}
+
+export interface AvailableCarsResponse {
+  dados: {
+    filtroCupom?: {
+      valido: boolean;
+    };
+    veiculosDisponiveis: Array<{
+      dadosVeiculo: {
+        modelo: string;
+        categoria: string;
+        grupoVeiculo: string;
+        codigoAcriss?: string;
+        rateQualifier?: string;
+        codigoVeiculo: string;
+        numeroPortas: number;
+        numeroAssentos: number;
+        capacidadeBagagem: number;
+        temArCondicionado: boolean;
+        isAutomatico: boolean;
+        imagemUrl: string;
+        valorTotal: number;
+        valorDiaria: number;
+        numeroDias: number;
+        tokenCotacao: string;
+        isMensal?: boolean;
+        [key: string]: unknown;
+      };
+      opcionais: unknown[];
+      protecoes: unknown[];
+      pesquisaLocacao: {
+        localRetiradaNome: string;
+        localDevolucaoNome: string;
+        localRetiradaSigla: string;
+        localDevolucaoSigla: string;
+        dataHoraRetirada: string;
+        dataHoraDevolucao: string;
+      };
+      rentalCompanyId?: number;
+      rentalCompanyName?: string;
+      [key: string]: unknown;
+    }>;
+    [key: string]: unknown;
+  };
+}
+
+export interface Agency {
+  codigo: number;
+  nome: string;
+  nomeAgencia?: string;
+  [key: string]: unknown;
+}
+
+export interface AvailableAgenciesResponse {
+  dados: Agency[];
+}
+
+export interface Booking {
+  reservaId: number;
+  codigoReserva: string;
+  codigoReservaAgencia?: string;
+  dataRetirada: string;
+  dataDevolucao: string;
+  statusReserva: {
+    nome: string;
+    [key: string]: unknown;
+  };
+  grupoVeiculo: string;
+  lojaRetirada: {
+    nome: string;
+    agencia: {
+      codAgencia: number;
+      nome: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  lojaDevolucao: {
+    nome: string;
+    [key: string]: unknown;
+  };
+  valorTotalApurado: number;
+  valorPorDia?: number;
+  valorCaucao?: number;
+  valorFranquia?: number;
+  codigoPromocional?: string;
+  opcionais?: Array<{ nome: string; [key: string]: unknown }>;
+  protecao?: string;
+  cliente?: {
+    nomeCompleto?: string;
+    name?: string;
+    email: string;
+    tel?: string;
+    ddd?: string;
+    telefone?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface CancellationReason {
+  codigo: string;
+  descricao: string;
+  [key: string]: unknown;
+}
+
+export interface AdminUser {
+  usuarioId: number;
+  id?: number;
+  nome: string;
+  sobrenome?: string;
+  email: string;
+  nomeLogin: string;
+  loginName?: string;
+  ativo: boolean;
+  active?: boolean;
+  acessado?: boolean;
+  tipoUsuario?: {
+    tipoUsuarioId: number;
+    nome: string;
+    [key: string]: unknown;
+  };
+  role?: string;
+  [key: string]: unknown;
+}
+
+export interface Profile {
+  tipoUsuarioId: number;
+  nome: string;
+  [key: string]: unknown;
 }
 
 // ==================== ENUMS E CONSTANTES ====================

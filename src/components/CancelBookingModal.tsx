@@ -69,10 +69,10 @@ const CancelBookingModal: React.FC<CancelBookingModalProps> = ({
     setIsLoading(true);
     try {
       const bookingCode = booking.codigoReservaAgencia || booking.codigoReserva;
-      await apiService.cancelBooking(agencyCode, {
-        codigoReserva: bookingCode,
-        motivoCancelamento: selectedReason.codigo,
-        observacoes: observations || undefined,
+      await apiService.cancelBooking({
+        rentalCompanyId: agencyCode > 0 && agencyCode <= 4 ? agencyCode : 1,
+        bookingCode: bookingCode,
+        cancellationReason: selectedReason.descricao + (observations ? ` - ${observations}` : ''),
       });
 
       toast.current?.show({

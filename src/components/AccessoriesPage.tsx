@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import { Card } from 'primereact/card';
 import type { Car } from '../hooks/useCarFilters';
 import AccessoriesList from './AccessoriesList';
 import Sidebar from './Sidebar';
@@ -117,7 +116,7 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
   return (
     <div className="accessories-page sidebar-container">
       <Toast ref={toast} />
-      <Card className="accessories-card">
+      <div className="accessories-content-wrapper">
         <div className="accessories-header">
           <h1 className="main-title">Acessórios</h1>
         </div>
@@ -157,7 +156,7 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
             />
           </div>
         </div>
-      </Card>
+      </div>
 
       <Sidebar
         selectedCar={selectedCar}

@@ -106,12 +106,7 @@ export class LocalizationService {
     data: VerifyAvailableCarsRequest
   ): Promise<AvailableCarsResponse['dados']> {
     try {
-      // Remover parceria se locadoras estiverem presentes
-      const requestData = { ...data };
-      if (requestData.locadoras && requestData.locadoras.length > 0) {
-        delete requestData.parceria;
-      }
-      const response = await apiService.verifyAvailableCars(codigoAgencia, requestData);
+      const response = await apiService.verifyAvailableCars(codigoAgencia, data);
       return response.dados;
     } catch (error) {
       console.error('Error verifying available cars:', error);

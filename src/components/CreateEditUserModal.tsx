@@ -108,11 +108,11 @@ const CreateEditUserModal: React.FC<CreateEditUserModalProps> = ({
       if (user) {
         // Update user
         await apiService.updateUser(user.usuarioId, {
-          nome: formData.nome,
-          sobrenome: formData.sobrenome,
+          name: formData.nome,
+          surname: formData.sobrenome,
           email: formData.email,
-          tipoUsuarioId: formData.tipoUsuarioId,
-          ativo: formData.ativo,
+          active: formData.ativo,
+          role: formData.tipoUsuarioId === 1 ? 'administrator' : 'operator',
         });
         toast.current?.show({
           severity: 'success',
@@ -122,13 +122,12 @@ const CreateEditUserModal: React.FC<CreateEditUserModalProps> = ({
       } else {
         // Create user
         await apiService.createUser({
-          nome: formData.nome,
-          sobrenome: formData.sobrenome,
+          loginName: formData.nomeLogin,
+          name: formData.nome,
+          surname: formData.sobrenome,
           email: formData.email,
-          nomeLogin: formData.nomeLogin,
-          tipoUsuarioId: formData.tipoUsuarioId,
-          tipoAtuacaoId: 1, // Vendas (baseado no sistema antigo)
-          ativo: formData.ativo,
+          active: formData.ativo,
+          role: formData.tipoUsuarioId === 1 ? 'administrator' : 'operator',
         });
         toast.current?.show({
           severity: 'success',

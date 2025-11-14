@@ -138,23 +138,33 @@ const AdminPage: React.FC = () => {
   const handleToggleUser = async (user: AdminUser) => {
     try {
       const updatedUser = await apiService.updateUser(user.usuarioId, {
-        nome: user.nome,
-        sobrenome: user.sobrenome,
+        name: user.nome,
+        surname: user.sobrenome || '',
         email: user.email,
-        ativo: !user.ativo,
+        active: !user.ativo,
+        role: user.role || 'operator',
       });
 
       // Update local state
+      const mappedUser: AdminUser = {
+        usuarioId: updatedUser.user.id,
+        nome: updatedUser.user.name,
+        sobrenome: updatedUser.user.surname,
+        email: updatedUser.user.email,
+        nomeLogin: updatedUser.user.loginName,
+        ativo: updatedUser.user.active,
+        role: updatedUser.user.role,
+      };
       setUsers(
         users.map((u) =>
-          u.usuarioId === user.usuarioId ? updatedUser.dados : u
+          u.usuarioId === user.usuarioId ? mappedUser : u
         )
       );
 
       toast.current?.show({
         severity: "success",
         summary: "Sucesso",
-        detail: updatedUser.dados.ativo
+        detail: updatedUser.user.active
           ? "Usuário ativado com sucesso."
           : "Usuário desativado com sucesso.",
       });
