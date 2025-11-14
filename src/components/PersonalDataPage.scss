@@ -1,13 +1,13 @@
 .personal-data-page {
   &.sidebar-container {
-    margin-right: 350px;
+    // Layout será controlado pelo .sidebar-container no Sidebar.scss
   }
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  flex-direction: column;
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+  flex: 1;
 
   .personal-data-card {
     width: 100%;
@@ -15,6 +15,7 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     overflow: hidden;
+    margin-top: 2rem;
   }
 
   .personal-data-header {

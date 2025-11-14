@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
+import { Card } from 'primereact/card';
 import type { Car } from '../hooks/useCarFilters';
 import AccessoriesList from './AccessoriesList';
 import Sidebar from './Sidebar';
@@ -116,7 +117,7 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
   return (
     <div className="accessories-page sidebar-container">
       <Toast ref={toast} />
-      <div className="accessories-content-wrapper">
+      <Card className="accessories-card">
         <div className="accessories-header">
           <h1 className="main-title">Acessórios</h1>
         </div>
@@ -133,15 +134,6 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
             />
           )}
 
-          <div className="accessories-summary">
-            <div className="summary-item">
-              <span className="label">Total de Acessórios:</span>
-              <span className="value">
-                R$ {totalPrice.toFixed(2).replace('.', ',')}
-              </span>
-            </div>
-          </div>
-
           <div className="accessories-footer">
             <Button
               label="Encerrar"
@@ -156,7 +148,7 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
             />
           </div>
         </div>
-      </div>
+      </Card>
 
       <Sidebar
         selectedCar={selectedCar}

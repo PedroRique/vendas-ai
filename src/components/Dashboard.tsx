@@ -460,6 +460,36 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'accessories' && selectedCar && localizationData) {
     return (
       <div className="dashboard-container">
+        <div className="dashboard-header-bar">
+          <h1>Reserve Aqui</h1>
+          <div className="header-actions">
+            <Button
+              label="Reservas"
+              icon="pi pi-list"
+              onClick={() => setCurrentPage('reservas')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            {isAdmin && (
+              <Button
+                label="Área Admin"
+                icon="pi pi-cog"
+                onClick={() => setCurrentPage('admin')}
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            )}
+            <Button
+              label="Sair"
+              icon="pi pi-sign-out"
+              onClick={handleLogout}
+              severity="secondary"
+              size="small"
+            />
+          </div>
+        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -483,6 +513,36 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'protections' && selectedCar && localizationData) {
     return (
       <div className="dashboard-container">
+        <div className="dashboard-header-bar">
+          <h1>Reserve Aqui</h1>
+          <div className="header-actions">
+            <Button
+              label="Reservas"
+              icon="pi pi-list"
+              onClick={() => setCurrentPage('reservas')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            {isAdmin && (
+              <Button
+                label="Área Admin"
+                icon="pi pi-cog"
+                onClick={() => setCurrentPage('admin')}
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            )}
+            <Button
+              label="Sair"
+              icon="pi pi-sign-out"
+              onClick={handleLogout}
+              severity="secondary"
+              size="small"
+            />
+          </div>
+        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -508,6 +568,36 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'personal' && selectedCar && localizationData) {
     return (
       <div className="dashboard-container">
+        <div className="dashboard-header-bar">
+          <h1>Reserve Aqui</h1>
+          <div className="header-actions">
+            <Button
+              label="Reservas"
+              icon="pi pi-list"
+              onClick={() => setCurrentPage('reservas')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            {isAdmin && (
+              <Button
+                label="Área Admin"
+                icon="pi pi-cog"
+                onClick={() => setCurrentPage('admin')}
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            )}
+            <Button
+              label="Sair"
+              icon="pi pi-sign-out"
+              onClick={handleLogout}
+              severity="secondary"
+              size="small"
+            />
+          </div>
+        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -536,6 +626,36 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'quotation' && selectedCar && localizationData && personalData && protocolo) {
     return (
       <div className="dashboard-container">
+        <div className="dashboard-header-bar">
+          <h1>Reserve Aqui</h1>
+          <div className="header-actions">
+            <Button
+              label="Reservas"
+              icon="pi pi-list"
+              onClick={() => setCurrentPage('reservas')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            {isAdmin && (
+              <Button
+                label="Área Admin"
+                icon="pi pi-cog"
+                onClick={() => setCurrentPage('admin')}
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            )}
+            <Button
+              label="Sair"
+              icon="pi pi-sign-out"
+              onClick={handleLogout}
+              severity="secondary"
+              size="small"
+            />
+          </div>
+        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -566,6 +686,36 @@ const Dashboard: React.FC = () => {
   if (currentStep === 'finalization' && selectedCar && booking) {
     return (
       <div className="dashboard-container">
+        <div className="dashboard-header-bar">
+          <h1>Reserve Aqui</h1>
+          <div className="header-actions">
+            <Button
+              label="Reservas"
+              icon="pi pi-list"
+              onClick={() => setCurrentPage('reservas')}
+              severity="secondary"
+              outlined
+              size="small"
+            />
+            {isAdmin && (
+              <Button
+                label="Área Admin"
+                icon="pi pi-cog"
+                onClick={() => setCurrentPage('admin')}
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            )}
+            <Button
+              label="Sair"
+              icon="pi pi-sign-out"
+              onClick={handleLogout}
+              severity="secondary"
+              size="small"
+            />
+          </div>
+        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -585,6 +735,50 @@ const Dashboard: React.FC = () => {
       </div>
     );
   }
+
+  const renderDashboardContent = () => {
+    if (isInitializingAttendance) {
+      return (
+        <div className="content-placeholder">
+          <h3>Iniciando atendimento...</h3>
+          <p>Aguarde enquanto o sistema prepara o atendimento.</p>
+        </div>
+      );
+    }
+
+    if (currentStep === 'localization') {
+      return (
+        <>
+          {protocolo && (
+            <StepNavigationMenu
+              currentStep={currentStep}
+              currentStepIndex={currentStepIndex}
+              onStepChange={handleStepChange}
+            />
+          )}
+          <LocalizationForm
+            onSuccess={(data) => handleLocalizationSuccess(data as unknown as LocalizationFormData)}
+            onAbort={handleLocalizationAbort}
+            agencyCode={agencyCode}
+            protocolo={protocolo}
+          />
+        </>
+      );
+    }
+
+    return (
+      <div className="content-placeholder">
+        <h3>Erro ao carregar dados</h3>
+        <p>Os dados de localização não estão disponíveis.</p>
+        <Button
+          label="Voltar ao formulário"
+          icon="pi pi-arrow-left"
+          onClick={() => setCurrentStep('localization')}
+          severity="secondary"
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="dashboard-container">
@@ -619,43 +813,11 @@ const Dashboard: React.FC = () => {
             />
           </div>
         </div>
-        <p>Bem-vindo, {user?.loginName || user?.name}!</p>
+        <p>Bem-vindo, {user?.name} {user?.surname}!</p>
       </div>
 
       <div className="dashboard-content">
-        {isInitializingAttendance ? (
-          <div className="content-placeholder">
-            <h3>Iniciando atendimento...</h3>
-            <p>Aguarde enquanto o sistema prepara o atendimento.</p>
-          </div>
-        ) : currentStep === 'localization' ? (
-          <>
-            {protocolo && (
-              <StepNavigationMenu
-                currentStep={currentStep}
-                currentStepIndex={currentStepIndex}
-                onStepChange={handleStepChange}
-              />
-            )}
-            <LocalizationForm
-              onSuccess={(data) => handleLocalizationSuccess(data as unknown as LocalizationFormData)}
-              onAbort={handleLocalizationAbort}
-              agencyCode={agencyCode}
-              protocolo={protocolo}
-            />
-          </>
-        ) : (
-          <div className="content-placeholder">
-            <h3>Erro ao carregar dados</h3>
-            <p>Os dados de localização não estão disponíveis.</p>
-            <Button
-              label="Voltar ao formulário"
-              icon="pi pi-arrow-left"
-              onClick={() => setCurrentStep('localization')}
-              severity="secondary"
-            />
-          </div>
-        )}
+        {renderDashboardContent()}
       </div>
     </div>
   );

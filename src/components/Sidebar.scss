@@ -3,7 +3,7 @@
   top: 0;
   right: 0;
   width: 350px;
-  height: 100vh;
+  height: calc(100vh - 75px);
   background-color: #ffffff;
   border-left: 1px solid #e0e0e0;
   overflow-y: auto;
@@ -14,7 +14,6 @@
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
 
   &-content {
-    overflow: initial;
     max-height: calc(100vh - 120px);
     padding-bottom: 1rem;
 
@@ -63,7 +62,6 @@
     }
 
     .label {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       font-size: 12px;
       font-weight: bold;
       margin: 1rem 0 0.25rem 0;
@@ -76,7 +74,7 @@
       }
 
       .price {
-        color: #ee7202;
+        color: var(--primary-color);
         float: right;
         font-weight: bold;
         margin-top: 0.25rem;
@@ -126,7 +124,7 @@
         }
 
         .price {
-          color: #ee7202;
+          color: var(--primary-color);
           float: right;
           font-weight: bold;
 
@@ -153,7 +151,7 @@
     }
 
     .price {
-      background-color: #ee7202;
+      background-color: var(--primary-color);
       color: #ffffff;
       display: flex;
       justify-content: space-between;
