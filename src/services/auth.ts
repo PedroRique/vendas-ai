@@ -116,6 +116,21 @@ class AuthService {
 
       // Verificar se o login foi bem-sucedido
       if (response.token && response.id) {
+        // Criar usuário temporário e salvar token no localStorage ANTES de buscar o role
+        // Isso garante que o token esteja disponível para a requisição getUser
+        const tempUser: User = {
+          id: response.id,
+          loginName: response.loginName || credentials.loginName,
+          name: response.name || '',
+          surname: response.surname || '',
+          email: response.email || '',
+          token: response.token,
+          hoursUntilTokenExpired: response.hoursUntilTokenExpired,
+          role: 'operator', // Valor temporário, será atualizado abaixo
+        };
+        // Salvar token no localStorage antes de fazer a requisição
+        this.saveUserToStorage(tempUser);
+
         // Buscar informações completas do usuário para obter o role
         let userRole = 'operator'; // Valor padrão
         try {
@@ -128,14 +143,9 @@ class AuthService {
           // Continua com role padrão se não conseguir buscar
         }
 
+        // Atualizar usuário com o role correto
         this.user = {
-          id: response.id,
-          loginName: response.loginName || credentials.loginName,
-          name: response.name || '',
-          surname: response.surname || '',
-          email: response.email || '',
-          token: response.token,
-          hoursUntilTokenExpired: response.hoursUntilTokenExpired,
+          ...tempUser,
           role: userRole,
         };
         this.saveUserToStorage(this.user);
@@ -207,6 +217,7 @@ class AuthService {
   }
 
   isAdmin(): boolean {
+    console.log('isAdmin', this.user?.role);
     return this.user?.role === 'administrator';
   }
 }
