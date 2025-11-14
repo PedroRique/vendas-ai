@@ -30,7 +30,43 @@ class AuthService {
 
   constructor() {
     // Verifica se há um usuário salvo no localStorage
-    this.loadUserFromStorage();
+    // Carregar de forma síncrona primeiro, depois atualizar role se necessário
+    this.loadUserFromStorageSync();
+    // Atualizar role de forma assíncrona se necessário
+    this.updateUserRoleIfNeeded();
+  }
+  
+  private loadUserFromStorageSync() {
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        this.user = JSON.parse(stored);
+        this.notifyListeners();
+      }
+    } catch (error) {
+      console.error('Error loading user from storage:', error);
+      this.clearUser();
+    }
+  }
+  
+  private async updateUserRoleIfNeeded() {
+    // Se o usuário não tem role ou tem role padrão, tentar buscar do servidor
+    if (this.user && this.user.id && (!this.user.role || this.user.role === 'operator')) {
+      try {
+        const userInfo = await apiService.getUser(this.user.id);
+        if (userInfo.user?.role) {
+          this.user.role = userInfo.user.role;
+          this.saveUserToStorage(this.user);
+          this.notifyListeners();
+        }
+      } catch (error) {
+        console.warn('Não foi possível atualizar role do usuário:', error);
+        // Continua com o role existente ou padrão
+        if (!this.user.role) {
+          this.user.role = 'operator';
+        }
+      }
+    }
   }
 
   // Gerenciamento de estado
@@ -60,19 +96,6 @@ class AuthService {
     localStorage.setItem('user', JSON.stringify(user));
   }
 
-  private loadUserFromStorage() {
-    try {
-      const stored = localStorage.getItem('user');
-      if (stored) {
-        this.user = JSON.parse(stored);
-        this.notifyListeners();
-      }
-    } catch (error) {
-      console.error('Error loading user from storage:', error);
-      this.clearUser();
-    }
-  }
-
   private clearUser() {
     this.user = null;
     localStorage.removeItem('user');
@@ -93,6 +116,18 @@ class AuthService {
 
       // Verificar se o login foi bem-sucedido
       if (response.token && response.id) {
+        // Buscar informações completas do usuário para obter o role
+        let userRole = 'operator'; // Valor padrão
+        try {
+          const userInfo = await apiService.getUser(response.id);
+          if (userInfo.user?.role) {
+            userRole = userInfo.user.role;
+          }
+        } catch (error) {
+          console.warn('Não foi possível buscar role do usuário, usando padrão:', error);
+          // Continua com role padrão se não conseguir buscar
+        }
+
         this.user = {
           id: response.id,
           loginName: response.loginName || credentials.loginName,
@@ -101,7 +136,7 @@ class AuthService {
           email: response.email || '',
           token: response.token,
           hoursUntilTokenExpired: response.hoursUntilTokenExpired,
-          role: 'operator', // Valor padrão; role não vem na resposta do login
+          role: userRole,
         };
         this.saveUserToStorage(this.user);
         this.notifyListeners();

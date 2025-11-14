@@ -211,6 +211,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handlePersonalDataSuccess = async (data: PersonalData, _isNewCustomer: boolean) => {
+    void _isNewCustomer; // Parâmetro não usado, mas necessário para compatibilidade com PersonalDataPage
     setPersonalData(data);
     
     // Salvar dados pessoais e fazer booking
@@ -254,6 +255,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handlePersonalDataQuotation = async (data: PersonalData, _isNewCustomer: boolean) => {
+    void _isNewCustomer; // Parâmetro não usado, mas necessário para compatibilidade com PersonalDataPage
     // Salvar dados pessoais antes de ir para cotação
     setPersonalData(data);
     setCurrentStep('quotation');

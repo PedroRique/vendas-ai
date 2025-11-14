@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { authService, type AuthState } from '../services/auth';
 
 export const useAuth = () => {
@@ -30,9 +30,9 @@ export const useAuth = () => {
     return authService.createPassword(loginName, password);
   };
 
-  const isAdmin = (): boolean => {
+  const isAdmin = useMemo(() => {
     return authService.isAdmin();
-  };
+  }, []);
 
   return {
     ...authState,
@@ -40,6 +40,6 @@ export const useAuth = () => {
     logout,
     checkFirstAccess,
     createPassword,
-    isAdmin: isAdmin(),
+    isAdmin,
   };
 };
