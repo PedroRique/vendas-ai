@@ -37,7 +37,7 @@ const CarFilters: React.FC<CarFiltersProps> = ({
     }
   };
 
-  const isFilterDisabled = (filter: CarFilter, _filterList: CarFilter[]): boolean => {
+  const isFilterDisabled = (filter: CarFilter): boolean => {
     // Se há outro filtro do mesmo nome ativo com valor diferente, desabilita este
     if (filter.name !== 'nomeAgencia') {
       const activeValue = activeFilters[filter.name as keyof typeof activeFilters];
@@ -48,12 +48,12 @@ const CarFilters: React.FC<CarFiltersProps> = ({
     return false;
   };
 
-  const renderFilterList = (filters: CarFilter[], _listType: string) => {
+  const renderFilterList = (filters: CarFilter[]) => {
     return (
       <ul className="filter-list">
         {filters.map((filter, index) => {
           const isActive = isFilterActive(filter);
-          const isDisabled = isFilterDisabled(filter, filters);
+          const isDisabled = isFilterDisabled(filter);
 
           return (
             <li
@@ -70,7 +70,6 @@ const CarFilters: React.FC<CarFiltersProps> = ({
               />
               <label
                 htmlFor={`filter-${filter.name}-${filter.value}-${index}`}
-                onClick={() => !isDisabled && onFilterChange(filter)}
                 className={isDisabled ? 'disabled' : ''}
               >
                 {filter.description}
@@ -89,7 +88,7 @@ const CarFilters: React.FC<CarFiltersProps> = ({
       {/* Filtros Disponíveis (Featured) */}
       {availableFilters.length > 0 && (
         <div className="filters-section">
-          {renderFilterList(availableFilters, 'available')}
+          {renderFilterList(availableFilters)}
         </div>
       )}
 
@@ -98,14 +97,14 @@ const CarFilters: React.FC<CarFiltersProps> = ({
         {/* Características */}
         {characteristicFilters.length > 0 && (
           <AccordionTab header="Características">
-            {renderFilterList(characteristicFilters, 'characteristic')}
+            {renderFilterList(characteristicFilters)}
           </AccordionTab>
         )}
 
         {/* Locadoras */}
         {carrentalFilters.length > 0 && (
           <AccordionTab header="Locadoras">
-            {renderFilterList(carrentalFilters, 'carrental')}
+            {renderFilterList(carrentalFilters)}
           </AccordionTab>
         )}
       </Accordion>
