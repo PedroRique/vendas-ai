@@ -1168,17 +1168,40 @@ class ApiService {
       page: params?.page,
       pageSize: params?.qtPorPagina,
     });
+    
+    // Buscar perfis para mapear role para tipoUsuarioId
+    const profilesResponse = await this.getProfiles();
+    // Criar mapa de role (nome do perfil) para tipoUsuarioId
+    // Os perfis são mapeados na mesma ordem dos roles retornados
+    const roleToTipoUsuarioId: Record<string, number> = {};
+    profilesResponse.dados.forEach((profile) => {
+      // O nome do perfil é o role (ex: 'administrator', 'operator')
+      roleToTipoUsuarioId[profile.nome.toLowerCase()] = profile.tipoUsuarioId;
+    });
+    
     return {
       dados: {
-        Itens: response.users.map((user) => ({
-          usuarioId: user.id,
-          nome: user.name,
-          sobrenome: user.surname,
-          email: user.email,
-          nomeLogin: user.loginName,
-          ativo: user.active,
-          role: user.role,
-        })),
+        Itens: response.users.map((user) => {
+          // Mapear role para tipoUsuarioId
+          // Buscar pelo nome do perfil que corresponde ao role
+          const tipoUsuarioId = roleToTipoUsuarioId[user.role.toLowerCase()] || 
+            (user.role === 'administrator' ? 1 : 2);
+          const profile = profilesResponse.dados.find(p => p.tipoUsuarioId === tipoUsuarioId);
+          
+          return {
+            usuarioId: user.id,
+            nome: user.name,
+            sobrenome: user.surname,
+            email: user.email,
+            nomeLogin: user.loginName,
+            ativo: user.active,
+            role: user.role,
+            tipoUsuario: profile ? {
+              tipoUsuarioId: profile.tipoUsuarioId,
+              nome: profile.nome,
+            } : undefined,
+          };
+        }),
         PaginaAtual: response.pagination.currentPage,
         TotalItens: response.pagination.totalCount,
       },

@@ -40,11 +40,6 @@
 
     .search-box {
       margin-bottom: 20px;
-
-      .search-input {
-        width: 100%;
-        max-width: 400px;
-      }
     }
 
     .users-table {
@@ -56,6 +51,19 @@
       .action-buttons {
         display: flex;
         justify-content: center;
+      }
+
+      .status-toggle-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: center;
+
+        .status-label {
+          font-size: 0.875rem;
+          color: #495057;
+          min-width: 50px;
+        }
       }
     }
   }

@@ -225,37 +225,36 @@ const CreateEditUserModal: React.FC<CreateEditUserModalProps> = ({
             {errors.tipoUsuarioId && <small className="p-error">{errors.tipoUsuarioId}</small>}
           </div>
 
-          {!user && (
-            <div className="form-field">
-              <label htmlFor="nomeLogin" className="form-label">
-                Login <span className="required">*</span>
-              </label>
-              <InputText
-                id="nomeLogin"
-                value={formData.nomeLogin}
-                onChange={(e) => setFormData({ ...formData, nomeLogin: e.target.value })}
-                className={errors.nomeLogin ? 'p-invalid' : ''}
-                placeholder="Digite o login para acesso"
-              />
-              {errors.nomeLogin && <small className="p-error">{errors.nomeLogin}</small>}
-            </div>
-          )}
+          <div className="form-field">
+            <label htmlFor="nomeLogin" className="form-label">
+              Login <span className="required">*</span>
+            </label>
+            <InputText
+              id="nomeLogin"
+              value={formData.nomeLogin}
+              onChange={(e) => setFormData({ ...formData, nomeLogin: e.target.value })}
+              className={errors.nomeLogin ? 'p-invalid' : ''}
+              placeholder="Digite o login para acesso"
+              disabled={!!user}
+              readOnly={!!user}
+            />
+            {errors.nomeLogin && <small className="p-error">{errors.nomeLogin}</small>}
+            {user && <small className="p-text-secondary">O login não pode ser alterado</small>}
+          </div>
 
-          {!user && (
-            <div className="form-field">
-              <label htmlFor="ativo" className="form-label">
-                Ativo
-              </label>
-              <div className="switch-field">
-                <InputSwitch
-                  id="ativo"
-                  checked={formData.ativo}
-                  onChange={(e) => setFormData({ ...formData, ativo: e.value ?? true })}
-                />
-                <span className="switch-label">{formData.ativo ? 'Ativo' : 'Inativo'}</span>
-              </div>
+          <div className="form-field">
+            <label htmlFor="ativo" className="form-label">
+              Ativo
+            </label>
+            <div className="switch-field">
+              <InputSwitch
+                id="ativo"
+                checked={formData.ativo}
+                onChange={(e) => setFormData({ ...formData, ativo: e.value ?? true })}
+              />
+              <span className="switch-label">{formData.ativo ? 'Ativo' : 'Inativo'}</span>
             </div>
-          )}
+          </div>
 
           <div className="modal-footer">
             <Button

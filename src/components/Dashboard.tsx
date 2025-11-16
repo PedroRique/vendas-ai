@@ -1,24 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from 'primereact/button';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import LocalizationForm from './LocalizationForm';
-import AvailableCarsPage from './AvailableCarsPage';
-import AccessoriesPage from './AccessoriesPage';
-import ProtectionsPage from './ProtectionsPage';
-import PersonalDataPage from './PersonalDataPage';
-import QuotationPage from './QuotationPage';
-import FinalizationPage from './FinalizationPage';
-import ReservasPage from './ReservasPage';
-import AdminPage from './AdminPage';
-import StepNavigationMenu from './StepNavigationMenu';
-import { apiService } from '../services/api';
-import type { BookingResponse, QuotationRequest } from '../services/api';
-import { formatBooking } from '../utils/formatBooking';
-import type { Car } from '../hooks/useCarFilters';
-import type { Accessory } from './AccessoriesPage';
-import type { Protection } from './ProtectionsPage';
-import './Dashboard.scss';
+import { Button } from "primereact/button";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import type { Car } from "../hooks/useCarFilters";
+import type { BookingResponse, QuotationRequest } from "../services/api";
+import { apiService } from "../services/api";
+import { formatBooking } from "../utils/formatBooking";
+import type { Accessory } from "./AccessoriesPage";
+import AccessoriesPage from "./AccessoriesPage";
+import AvailableCarsPage from "./AvailableCarsPage";
+import "./Dashboard.scss";
+import FinalizationPage from "./FinalizationPage";
+import LocalizationForm from "./LocalizationForm";
+import PersonalDataPage from "./PersonalDataPage";
+import type { Protection } from "./ProtectionsPage";
+import ProtectionsPage from "./ProtectionsPage";
+import QuotationPage from "./QuotationPage";
+import StepNavigationMenu from "./StepNavigationMenu";
 
 interface LocalizationFormData {
   localization: Record<string, unknown>;
@@ -47,31 +45,32 @@ interface PersonalData {
 }
 
 const Dashboard: React.FC = () => {
-  const { user, logout, isAdmin } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const location = useLocation();
-  
-  // Determinar a página atual baseado na rota
-  const getCurrentPageFromPath = (): 'reserve' | 'reservas' | 'admin' => {
-    const path = location.pathname;
-    if (path.startsWith('/reservas')) return 'reservas';
-    if (path.startsWith('/admin')) return 'admin';
-    return 'reserve';
-  };
-  
-  const currentPage = getCurrentPageFromPath();
-  const [currentStep, setCurrentStep] = useState<'localization' | 'cars' | 'accessories' | 'protections' | 'personal' | 'quotation' | 'finalization'>('localization');
+  const [currentStep, setCurrentStep] = useState<
+    | "localization"
+    | "cars"
+    | "accessories"
+    | "protections"
+    | "personal"
+    | "quotation"
+    | "finalization"
+  >("localization");
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [localizationData, setLocalizationData] = useState<LocalizationFormData | null>(null);
+  const [localizationData, setLocalizationData] =
+    useState<LocalizationFormData | null>(null);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [accessories, setAccessories] = useState<Accessory[]>([]);
   const [protections, setProtections] = useState<Protection[]>([]);
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
   const [booking, setBooking] = useState<BookingResponse | null>(null);
   const [protocolo, setProtocolo] = useState<string | null>(null);
-  const [isInitializingAttendance, setIsInitializingAttendance] = useState(false);
+  const [isInitializingAttendance, setIsInitializingAttendance] =
+    useState(false);
 
-  const agencyCode = (user && 'id_carrental' in user ? (user.id_carrental as number) : 100) || 100;
+  const agencyCode =
+    (user && "id_carrental" in user ? (user.id_carrental as number) : 100) ||
+    100;
 
   // Iniciar atendimento automaticamente quando o componente montar
   useEffect(() => {
@@ -86,7 +85,7 @@ const Dashboard: React.FC = () => {
           const newProtocolo = response.dados.toString();
           setProtocolo(newProtocolo);
         } catch (error) {
-          console.error('Erro ao iniciar atendimento:', error);
+          console.error("Erro ao iniciar atendimento:", error);
           // Em caso de erro, ainda permite continuar (pode ser que o backend não exija)
         } finally {
           setIsInitializingAttendance(false);
@@ -94,22 +93,20 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    if (currentPage === 'reserve') {
-      initializeAttendance();
-    }
+    initializeAttendance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agencyCode, location.pathname]);
 
   // Função para mapear step para índice
   const getStepIndex = (step: string): number => {
     const stepMap: Record<string, number> = {
-      'localization': 0,
-      'cars': 1,
-      'accessories': 2,
-      'protections': 3,
-      'personal': 4,
-      'quotation': 4, // Mesmo índice que personal
-      'finalization': 5,
+      localization: 0,
+      cars: 1,
+      accessories: 2,
+      protections: 3,
+      personal: 4,
+      quotation: 4, // Mesmo índice que personal
+      finalization: 5,
     };
     return stepMap[step] ?? 0;
   };
@@ -132,9 +129,9 @@ const Dashboard: React.FC = () => {
     setPersonalData(null);
     setBooking(null);
     setProtocolo(null); // Limpar protocolo para gerar um novo
-    setCurrentStep('localization');
+    setCurrentStep("localization");
     setCurrentStepIndex(0);
-    
+
     // Iniciar um novo atendimento automaticamente
     try {
       const response = await apiService.startAttendance({
@@ -143,23 +140,15 @@ const Dashboard: React.FC = () => {
       const newProtocolo = response.dados.toString();
       setProtocolo(newProtocolo);
     } catch (error) {
-      console.error('Erro ao iniciar novo atendimento:', error);
+      console.error("Erro ao iniciar novo atendimento:", error);
     }
   };
 
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-    }
-  };
 
   const handleLocalizationSuccess = (data: LocalizationFormData) => {
-    console.log('Localization data:', data);
+    console.log("Localization data:", data);
     setLocalizationData(data);
-    setCurrentStep('cars');
+    setCurrentStep("cars");
     setCurrentStepIndex(1);
   };
 
@@ -174,13 +163,13 @@ const Dashboard: React.FC = () => {
     if (targetIndex <= currentStepIndex) {
       // Verificar se há dados necessários para navegar para o step
       const stepNeedsData: Record<string, boolean> = {
-        'localization': true, // Sempre pode navegar para localization
-        'cars': !!localizationData,
-        'accessories': !!(selectedCar && localizationData),
-        'protections': !!(selectedCar && localizationData),
-        'personal': !!(selectedCar && localizationData),
-        'quotation': !!(selectedCar && localizationData && personalData),
-        'finalization': !!(selectedCar && booking),
+        localization: true, // Sempre pode navegar para localization
+        cars: !!localizationData,
+        accessories: !!(selectedCar && localizationData),
+        protections: !!(selectedCar && localizationData),
+        personal: !!(selectedCar && localizationData),
+        quotation: !!(selectedCar && localizationData && personalData),
+        finalization: !!(selectedCar && booking),
       };
 
       if (stepNeedsData[step] !== false) {
@@ -191,7 +180,7 @@ const Dashboard: React.FC = () => {
 
   const handleCarSelect = (car: Car) => {
     setSelectedCar(car);
-    setCurrentStep('accessories');
+    setCurrentStep("accessories");
     setCurrentStepIndex(2);
   };
 
@@ -202,7 +191,7 @@ const Dashboard: React.FC = () => {
 
   const handleAccessoriesSuccess = (selectedAccessories: Accessory[]) => {
     setAccessories(selectedAccessories);
-    setCurrentStep('protections');
+    setCurrentStep("protections");
     setCurrentStepIndex(3);
   };
 
@@ -213,7 +202,7 @@ const Dashboard: React.FC = () => {
 
   const handleProtectionsSuccess = (selectedProtections: Protection[]) => {
     setProtections(selectedProtections);
-    setCurrentStep('personal');
+    setCurrentStep("personal");
     setCurrentStepIndex(4);
   };
 
@@ -222,23 +211,35 @@ const Dashboard: React.FC = () => {
     endAttendance();
   };
 
-  const handlePersonalDataSuccess = async (data: PersonalData, _isNewCustomer: boolean) => {
+  const handlePersonalDataSuccess = async (
+    data: PersonalData,
+    _isNewCustomer: boolean
+  ) => {
     void _isNewCustomer; // Parâmetro não usado, mas necessário para compatibilidade com PersonalDataPage
     setPersonalData(data);
-    
+
     // Salvar dados pessoais e fazer booking
     if (selectedCar && localizationData && protocolo) {
       try {
         // Construir pesquisaLocacao com os dados necessários
-        const locData = localizationData.localization as Record<string, unknown>;
+        const locData = localizationData.localization as Record<
+          string,
+          unknown
+        >;
         const selectedCarWithLoc = {
           ...selectedCar,
           pesquisaLocacao: {
             ...selectedCar.pesquisaLocacao,
-            dataHoraDevolucao: (locData.dataHoraDevolucao as string) || '',
-            dataHoraRetirada: (locData.dataHoraRetirada as string) || '',
-            localRetiradaSigla: (locData.locaisRetirada as string[])?.[0] || selectedCar.pesquisaLocacao.localRetiradaNome || '',
-            localDevolucaoSigla: (locData.locaisDevolucao as string[])?.[0] || selectedCar.pesquisaLocacao.localDevolucaoNome || '',
+            dataHoraDevolucao: (locData.dataHoraDevolucao as string) || "",
+            dataHoraRetirada: (locData.dataHoraRetirada as string) || "",
+            localRetiradaSigla:
+              (locData.locaisRetirada as string[])?.[0] ||
+              selectedCar.pesquisaLocacao.localRetiradaNome ||
+              "",
+            localDevolucaoSigla:
+              (locData.locaisDevolucao as string[])?.[0] ||
+              selectedCar.pesquisaLocacao.localDevolucaoNome ||
+              "",
           },
         };
 
@@ -250,27 +251,36 @@ const Dashboard: React.FC = () => {
           },
           accessories,
           protection: protections,
-          localization: localizationData.localization as Record<string, unknown>,
+          localization: localizationData.localization as Record<
+            string,
+            unknown
+          >,
           id_attendance: protocolo,
           id_carrental: agencyCode,
         });
 
-        const response = await apiService.booking(agencyCode, bookingData as QuotationRequest);
+        const response = await apiService.booking(
+          agencyCode,
+          bookingData as QuotationRequest
+        );
         setBooking(response as unknown as BookingResponse);
-        setCurrentStep('finalization');
+        setCurrentStep("finalization");
         setCurrentStepIndex(5);
       } catch (error: unknown) {
-        console.error('Erro ao finalizar reserva:', error);
+        console.error("Erro ao finalizar reserva:", error);
         // Não navegar para finalização em caso de erro
       }
     }
   };
 
-  const handlePersonalDataQuotation = async (data: PersonalData, _isNewCustomer: boolean) => {
+  const handlePersonalDataQuotation = async (
+    data: PersonalData,
+    _isNewCustomer: boolean
+  ) => {
     void _isNewCustomer; // Parâmetro não usado, mas necessário para compatibilidade com PersonalDataPage
     // Salvar dados pessoais antes de ir para cotação
     setPersonalData(data);
-    setCurrentStep('quotation');
+    setCurrentStep("quotation");
     setCurrentStepIndex(4);
   };
 
@@ -284,15 +294,24 @@ const Dashboard: React.FC = () => {
     if (selectedCar && localizationData && personalData && protocolo) {
       try {
         // Construir pesquisaLocacao com os dados necessários
-        const locData = localizationData.localization as Record<string, unknown>;
+        const locData = localizationData.localization as Record<
+          string,
+          unknown
+        >;
         const selectedCarWithLoc = {
           ...selectedCar,
           pesquisaLocacao: {
             ...selectedCar.pesquisaLocacao,
-            dataHoraDevolucao: (locData.dataHoraDevolucao as string) || '',
-            dataHoraRetirada: (locData.dataHoraRetirada as string) || '',
-            localRetiradaSigla: (locData.locaisRetirada as string[])?.[0] || selectedCar.pesquisaLocacao.localRetiradaNome || '',
-            localDevolucaoSigla: (locData.locaisDevolucao as string[])?.[0] || selectedCar.pesquisaLocacao.localDevolucaoNome || '',
+            dataHoraDevolucao: (locData.dataHoraDevolucao as string) || "",
+            dataHoraRetirada: (locData.dataHoraRetirada as string) || "",
+            localRetiradaSigla:
+              (locData.locaisRetirada as string[])?.[0] ||
+              selectedCar.pesquisaLocacao.localRetiradaNome ||
+              "",
+            localDevolucaoSigla:
+              (locData.locaisDevolucao as string[])?.[0] ||
+              selectedCar.pesquisaLocacao.localDevolucaoNome ||
+              "",
           },
         };
 
@@ -304,17 +323,23 @@ const Dashboard: React.FC = () => {
           },
           accessories,
           protection: protections,
-          localization: localizationData.localization as Record<string, unknown>,
+          localization: localizationData.localization as Record<
+            string,
+            unknown
+          >,
           id_attendance: protocolo,
           id_carrental: agencyCode,
         });
 
-        const response = await apiService.booking(agencyCode, bookingData as QuotationRequest);
+        const response = await apiService.booking(
+          agencyCode,
+          bookingData as QuotationRequest
+        );
         setBooking(response as unknown as BookingResponse);
-        setCurrentStep('finalization');
+        setCurrentStep("finalization");
         setCurrentStepIndex(5);
       } catch (error: unknown) {
-        console.error('Erro ao finalizar reserva:', error);
+        console.error("Erro ao finalizar reserva:", error);
       }
     }
   };
@@ -337,118 +362,15 @@ const Dashboard: React.FC = () => {
     setProtections([]);
     setPersonalData(null);
     setBooking(null);
-    setCurrentStep('localization');
+    setCurrentStep("localization");
   };
 
-  // Render Admin page
-  if (currentPage === 'admin') {
-    return (
-      <div className="dashboard-container">
-        <div className="dashboard-header-bar">
-          <h1>Reserve Aqui</h1>
-          <div className="header-actions">
-            <Button
-              label="Reserve Aqui"
-              icon="pi pi-shopping-cart"
-              onClick={() => navigate('/reserve')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            <Button
-              label="Reservas"
-              icon="pi pi-list"
-              onClick={() => navigate('/reservas')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            <Button
-              label="Sair"
-              icon="pi pi-sign-out"
-              onClick={handleLogout}
-              severity="secondary"
-              size="small"
-            />
-          </div>
-        </div>
-        <AdminPage />
-      </div>
-    );
-  }
+  // O Dashboard agora só renderiza o fluxo de reserva
+  // Admin e Reservas são rotas separadas no App.tsx
 
-  // Render Reservas page
-  if (currentPage === 'reservas') {
+  if (currentStep === "cars" && localizationData) {
     return (
       <div className="dashboard-container">
-        <div className="dashboard-header-bar">
-          <h1>Reserve Aqui</h1>
-          <div className="header-actions">
-            <Button
-              label="Reserve Aqui"
-              icon="pi pi-shopping-cart"
-              onClick={() => navigate('/reserve')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            {isAdmin && (
-              <Button
-                label="Área Admin"
-                icon="pi pi-cog"
-                onClick={() => navigate('/admin')}
-                severity="secondary"
-                outlined
-                size="small"
-              />
-            )}
-            <Button
-              label="Sair"
-              icon="pi pi-sign-out"
-              onClick={handleLogout}
-              severity="secondary"
-              size="small"
-            />
-          </div>
-        </div>
-        <ReservasPage />
-      </div>
-    );
-  }
-
-  if (currentStep === 'cars' && localizationData) {
-    return (
-      <div className="dashboard-container">
-        <div className="dashboard-header-bar">
-          <h1>Reserve Aqui</h1>
-          <div className="header-actions">
-            <Button
-              label="Reservas"
-              icon="pi pi-list"
-              onClick={() => navigate('/reservas')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            {isAdmin && (
-              <Button
-                label="Área Admin"
-                icon="pi pi-cog"
-                onClick={() => navigate('/admin')}
-                severity="secondary"
-                outlined
-                size="small"
-              />
-            )}
-            <Button
-              label="Sair"
-              icon="pi pi-sign-out"
-              onClick={handleLogout}
-              severity="secondary"
-              size="small"
-            />
-          </div>
-        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -460,7 +382,9 @@ const Dashboard: React.FC = () => {
           availabilityData={localizationData.availability}
           localizationData={{
             rentalType: localizationData.rentalType,
-            franquiaKM: localizationData.localization.franquiaKM as { codigo: string } | undefined,
+            franquiaKM: localizationData.localization.franquiaKM as
+              | { codigo: string }
+              | undefined,
           }}
           onCarSelect={handleCarSelect}
           onAbort={handleCarsPageAbort}
@@ -469,39 +393,9 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  if (currentStep === 'accessories' && selectedCar && localizationData) {
+  if (currentStep === "accessories" && selectedCar && localizationData) {
     return (
       <div className="dashboard-container">
-        <div className="dashboard-header-bar">
-          <h1>Reserve Aqui</h1>
-          <div className="header-actions">
-            <Button
-              label="Reservas"
-              icon="pi pi-list"
-              onClick={() => navigate('/reservas')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            {isAdmin && (
-              <Button
-                label="Área Admin"
-                icon="pi pi-cog"
-                onClick={() => navigate('/admin')}
-                severity="secondary"
-                outlined
-                size="small"
-              />
-            )}
-            <Button
-              label="Sair"
-              icon="pi pi-sign-out"
-              onClick={handleLogout}
-              severity="secondary"
-              size="small"
-            />
-          </div>
-        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -522,39 +416,9 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  if (currentStep === 'protections' && selectedCar && localizationData) {
+  if (currentStep === "protections" && selectedCar && localizationData) {
     return (
       <div className="dashboard-container">
-        <div className="dashboard-header-bar">
-          <h1>Reserve Aqui</h1>
-          <div className="header-actions">
-            <Button
-              label="Reservas"
-              icon="pi pi-list"
-              onClick={() => navigate('/reservas')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            {isAdmin && (
-              <Button
-                label="Área Admin"
-                icon="pi pi-cog"
-                onClick={() => navigate('/admin')}
-                severity="secondary"
-                outlined
-                size="small"
-              />
-            )}
-            <Button
-              label="Sair"
-              icon="pi pi-sign-out"
-              onClick={handleLogout}
-              severity="secondary"
-              size="small"
-            />
-          </div>
-        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -577,39 +441,9 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  if (currentStep === 'personal' && selectedCar && localizationData) {
+  if (currentStep === "personal" && selectedCar && localizationData) {
     return (
       <div className="dashboard-container">
-        <div className="dashboard-header-bar">
-          <h1>Reserve Aqui</h1>
-          <div className="header-actions">
-            <Button
-              label="Reservas"
-              icon="pi pi-list"
-              onClick={() => navigate('/reservas')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            {isAdmin && (
-              <Button
-                label="Área Admin"
-                icon="pi pi-cog"
-                onClick={() => navigate('/admin')}
-                severity="secondary"
-                outlined
-                size="small"
-              />
-            )}
-            <Button
-              label="Sair"
-              icon="pi pi-sign-out"
-              onClick={handleLogout}
-              severity="secondary"
-              size="small"
-            />
-          </div>
-        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -628,46 +462,24 @@ const Dashboard: React.FC = () => {
           accessories={accessories}
           protections={protections}
           onSuccess={handlePersonalDataSuccess}
-          onQuotation={(data, isNewCustomer) => handlePersonalDataQuotation(data, isNewCustomer)}
+          onQuotation={(data, isNewCustomer) =>
+            handlePersonalDataQuotation(data, isNewCustomer)
+          }
           onAbort={handlePersonalDataAbort}
         />
       </div>
     );
   }
 
-  if (currentStep === 'quotation' && selectedCar && localizationData && personalData && protocolo) {
+  if (
+    currentStep === "quotation" &&
+    selectedCar &&
+    localizationData &&
+    personalData &&
+    protocolo
+  ) {
     return (
       <div className="dashboard-container">
-        <div className="dashboard-header-bar">
-          <h1>Reserve Aqui</h1>
-          <div className="header-actions">
-            <Button
-              label="Reservas"
-              icon="pi pi-list"
-              onClick={() => navigate('/reservas')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            {isAdmin && (
-              <Button
-                label="Área Admin"
-                icon="pi pi-cog"
-                onClick={() => navigate('/admin')}
-                severity="secondary"
-                outlined
-                size="small"
-              />
-            )}
-            <Button
-              label="Sair"
-              icon="pi pi-sign-out"
-              onClick={handleLogout}
-              severity="secondary"
-              size="small"
-            />
-          </div>
-        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -695,39 +507,9 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  if (currentStep === 'finalization' && selectedCar && booking) {
+  if (currentStep === "finalization" && selectedCar && booking) {
     return (
       <div className="dashboard-container">
-        <div className="dashboard-header-bar">
-          <h1>Reserve Aqui</h1>
-          <div className="header-actions">
-            <Button
-              label="Reservas"
-              icon="pi pi-list"
-              onClick={() => navigate('/reservas')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            {isAdmin && (
-              <Button
-                label="Área Admin"
-                icon="pi pi-cog"
-                onClick={() => navigate('/admin')}
-                severity="secondary"
-                outlined
-                size="small"
-              />
-            )}
-            <Button
-              label="Sair"
-              icon="pi pi-sign-out"
-              onClick={handleLogout}
-              severity="secondary"
-              size="small"
-            />
-          </div>
-        </div>
         {protocolo && (
           <StepNavigationMenu
             currentStep={currentStep}
@@ -737,7 +519,13 @@ const Dashboard: React.FC = () => {
         )}
         <FinalizationPage
           selectedCar={selectedCar}
-          booking={booking as unknown as { codigoReservaAgencia?: string; codigoReserva?: string; [key: string]: unknown }}
+          booking={
+            booking as unknown as {
+              codigoReservaAgencia?: string;
+              codigoReserva?: string;
+              [key: string]: unknown;
+            }
+          }
           accessories={accessories}
           protections={protections}
           personalData={personalData!}
@@ -758,7 +546,7 @@ const Dashboard: React.FC = () => {
       );
     }
 
-    if (currentStep === 'localization') {
+    if (currentStep === "localization") {
       return (
         <>
           {protocolo && (
@@ -769,7 +557,9 @@ const Dashboard: React.FC = () => {
             />
           )}
           <LocalizationForm
-            onSuccess={(data) => handleLocalizationSuccess(data as unknown as LocalizationFormData)}
+            onSuccess={(data) =>
+              handleLocalizationSuccess(data as unknown as LocalizationFormData)
+            }
             onAbort={handleLocalizationAbort}
             agencyCode={agencyCode}
             protocolo={protocolo}
@@ -785,7 +575,7 @@ const Dashboard: React.FC = () => {
         <Button
           label="Voltar ao formulário"
           icon="pi pi-arrow-left"
-          onClick={() => setCurrentStep('localization')}
+          onClick={() => setCurrentStep("localization")}
           severity="secondary"
         />
       </div>
@@ -794,43 +584,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-header">
-        <div className="header-top">
-          <h1>Reserve Aqui</h1>
-          <div className="header-actions">
-            <Button
-              label="Reservas"
-              icon="pi pi-list"
-              onClick={() => navigate('/reservas')}
-              severity="secondary"
-              outlined
-              size="small"
-            />
-            {isAdmin && (
-              <Button
-                label="Área Admin"
-                icon="pi pi-cog"
-                onClick={() => navigate('/admin')}
-                severity="secondary"
-                outlined
-                size="small"
-              />
-            )}
-            <Button
-              label="Sair"
-              icon="pi pi-sign-out"
-              onClick={handleLogout}
-              severity="secondary"
-              size="small"
-            />
-          </div>
-        </div>
-        <p>Bem-vindo, {user?.name} {user?.surname}!</p>
-      </div>
-
-      <div className="dashboard-content">
-        {renderDashboardContent()}
-      </div>
+      <div className="dashboard-content">{renderDashboardContent()}</div>
     </div>
   );
 };

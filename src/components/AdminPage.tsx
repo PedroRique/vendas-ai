@@ -1,10 +1,12 @@
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
 import { Menu } from "primereact/menu";
 import { Toast } from "primereact/toast";
-import { ToggleButton } from "primereact/togglebutton";
+import { InputSwitch } from "primereact/inputswitch";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { apiService, type AdminUser } from "../services/api";
@@ -15,9 +17,6 @@ const AdminPage: React.FC = () => {
   const { isAdmin } = useAuth();
   const toast = React.useRef<Toast>(null);
   const menuRef = React.useRef<Menu>(null);
-  const [currentMenuUser, setCurrentMenuUser] = useState<AdminUser | null>(
-    null
-  );
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [profiles, setProfiles] = useState<
     Array<{ tipoUsuarioId: number; nome: string }>
@@ -196,18 +195,14 @@ const AdminPage: React.FC = () => {
         label: "Editar",
         icon: "pi pi-pencil",
         command: () => {
-          if (currentMenuUser) {
-            handleEditUser(currentMenuUser);
-          }
+          handleEditUser(rowData);
         },
       },
       {
         label: "Resetar Senha",
         icon: "pi pi-key",
         command: () => {
-          if (currentMenuUser) {
-            handleResetPassword(currentMenuUser);
-          }
+          handleResetPassword(rowData);
         },
       },
     ];
@@ -218,7 +213,6 @@ const AdminPage: React.FC = () => {
           icon="pi pi-ellipsis-v"
           className="p-button-text p-button-rounded"
           onClick={(e) => {
-            setCurrentMenuUser(rowData);
             menuRef.current?.toggle(e);
           }}
           aria-label="Ações"
@@ -230,13 +224,14 @@ const AdminPage: React.FC = () => {
 
   const statusBodyTemplate = (rowData: AdminUser) => {
     return (
-      <ToggleButton
-        checked={rowData.ativo}
-        onChange={() => handleToggleUser(rowData)}
-        onLabel="Ativo"
-        offLabel="Inativo"
-        disabled={!isAdmin}
-      />
+      <div className="status-toggle-wrapper">
+        <InputSwitch
+          checked={rowData.ativo}
+          onChange={() => handleToggleUser(rowData)}
+          disabled={!isAdmin}
+        />
+        <span className="status-label">{rowData.ativo ? 'Ativo' : 'Inativo'}</span>
+      </div>
     );
   };
 
@@ -286,15 +281,15 @@ const AdminPage: React.FC = () => {
         ) : (
           <>
             <div className="search-box">
-              <span className="p-input-icon-left">
-                <i className="pi pi-search" />
+              <IconField iconPosition="left">
+                <InputIcon className="pi pi-search" />
                 <InputText
                   value={searchKey}
                   onChange={(e) => setSearchKey(e.target.value)}
                   placeholder="Buscar usuário..."
                   className="search-input"
                 />
-              </span>
+              </IconField>
             </div>
 
             <DataTable

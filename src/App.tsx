@@ -1,6 +1,9 @@
 import "./App.css";
 import { Routes, Route, Navigate } from "react-router-dom";
+import Layout from "./components/Layout";
 import Dashboard from "./components/Dashboard";
+import ReservasPage from "./components/ReservasPage";
+import AdminPage from "./components/AdminPage";
 import LoginForm from "./components/LoginForm";
 import LoadingScreen from "./components/LoadingScreen";
 import { useAuth } from "./hooks/useAuth";
@@ -18,9 +21,9 @@ function App() {
       <Routes>
         {isAuthenticated ? (
           <>
-            <Route path="/reservas" element={<Dashboard />} />
-            <Route path="/admin" element={<Dashboard />} />
-            <Route path="/reserve/*" element={<Dashboard />} />
+            <Route path="/reserve/*" element={<Layout><Dashboard /></Layout>} />
+            <Route path="/reservas" element={<Layout><ReservasPage /></Layout>} />
+            <Route path="/admin" element={<Layout><AdminPage /></Layout>} />
             <Route path="/" element={<Navigate to="/reserve" replace />} />
             <Route path="*" element={<Navigate to="/reserve" replace />} />
           </>
