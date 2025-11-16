@@ -164,8 +164,9 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
       
       if (apiErrors && Array.isArray(apiErrors) && apiErrors.length > 0) {
         // Mostrar um toast para cada erro
-        apiErrors.forEach((error: { message?: string; code?: string }) => {
-          const errorMessage = error.message || `Erro ${error.code || 'desconhecido'}`;
+        apiErrors.forEach((error: unknown) => {
+          const apiError = error as { message?: string; code?: string };
+          const errorMessage = apiError.message || `Erro ${apiError.code || 'desconhecido'}`;
           toast.current?.show({
             severity: 'error',
             summary: 'Erro',

@@ -1,12 +1,15 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
-import { useCarFilters, type Car, type CarFilter } from '../hooks/useCarFilters';
-import CarFilters from './CarFilters';
-import PriceFilter from './PriceFilter';
-import CarList from './CarList';
-import CarDetailsModal from './CarDetailsModal';
-import './AvailableCarsPage.scss';
+import { Button } from "primereact/button";
+import { Toast } from "primereact/toast";
+import React, { useMemo, useState } from "react";
+import {
+  useCarFilters,
+  type Car,
+  type CarFilter,
+} from "../hooks/useCarFilters";
+import "./AvailableCarsPage.scss";
+import CarDetailsModal from "./CarDetailsModal";
+import CarFilters from "./CarFilters";
+import CarList from "./CarList";
 
 interface AvailableCarsPageProps {
   availabilityData: {
@@ -44,7 +47,6 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
   const {
     filteredCars,
     priceRange,
-    setPriceRange,
     activeFilters,
     toggleFilter,
     clearFilters,
@@ -52,45 +54,51 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
   } = useCarFilters(cars);
 
   // Preparar filtros disponíveis
-  const availableFilters: CarFilter[] = useMemo(() => [
-    {
-      name: 'lugares',
-      description: 'Carros com mais de 5 lugares',
-      value: 5,
-      featured: true,
-    },
-    {
-      name: 'cambioAutomatico',
-      description: 'Somente carro automático',
-      value: true,
-      featured: true,
-    },
-  ], []);
+  const availableFilters: CarFilter[] = useMemo(
+    () => [
+      {
+        name: "lugares",
+        description: "Carros com mais de 5 lugares",
+        value: 5,
+        featured: true,
+      },
+      {
+        name: "cambioAutomatico",
+        description: "Somente carro automático",
+        value: true,
+        featured: true,
+      },
+    ],
+    []
+  );
 
-  const characteristicFilters: CarFilter[] = useMemo(() => [
-    {
-      name: 'arCondicionado',
-      description: 'Ar condicionado',
-      value: true,
-      featured: false,
-    },
-    {
-      name: 'numeroPortas',
-      description: '2 portas',
-      value: 2,
-      featured: false,
-    },
-    {
-      name: 'numeroPortas',
-      description: '4 portas',
-      value: 4,
-      featured: false,
-    },
-  ], []);
+  const characteristicFilters: CarFilter[] = useMemo(
+    () => [
+      {
+        name: "arCondicionado",
+        description: "Ar condicionado",
+        value: true,
+        featured: false,
+      },
+      {
+        name: "numeroPortas",
+        description: "2 portas",
+        value: 2,
+        featured: false,
+      },
+      {
+        name: "numeroPortas",
+        description: "4 portas",
+        value: 4,
+        featured: false,
+      },
+    ],
+    []
+  );
 
   const carrentalFilters: CarFilter[] = useMemo(() => {
     return availableLocadoras.map((locadora) => ({
-      name: 'nomeAgencia',
+      name: "nomeAgencia",
       description: locadora,
       value: locadora,
       featured: false,
@@ -130,18 +138,18 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
       setSelectedCar(car);
       onCarSelect(car);
       toast.current?.show({
-        severity: 'success',
-        summary: 'Veículo Selecionado',
+        severity: "success",
+        summary: "Veículo Selecionado",
         detail: `${car.dadosVeiculo.modelo} selecionado com sucesso.`,
       });
     }
   };
 
-  const handleCopyCar = (_car: Car) => {
+  const handleCopyCar = () => {
     toast.current?.show({
-      severity: 'success',
-      summary: 'Copiado',
-      detail: 'Dados do veículo copiados para área de transferência.',
+      severity: "success",
+      summary: "Copiado",
+      detail: "Dados do veículo copiados para área de transferência.",
     });
   };
 
@@ -179,8 +187,8 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
               onClick={handleAbort}
               className="abort-button"
             />
-            {(Object.keys(activeFilters).length > 0 || 
-              priceRange.min !== initialPriceRange.min || 
+            {(Object.keys(activeFilters).length > 0 ||
+              priceRange.min !== initialPriceRange.min ||
               priceRange.max !== initialPriceRange.max) && (
               <Button
                 label="Limpar Filtros"
@@ -225,4 +233,3 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
 };
 
 export default AvailableCarsPage;
-

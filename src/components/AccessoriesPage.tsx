@@ -88,17 +88,6 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
     setSelectedAccessories(newSelected);
   };
 
-  const calculateTotalPrice = (items: Accessory[]): number => {
-    return items.reduce((total, item) => {
-      // valorTotal já é o valor total (diária * quantidade cobrada)
-      return total + (item.valorTotal || 0);
-    }, 0);
-  };
-
-  const totalPrice = useMemo(() => {
-    return calculateTotalPrice(selectedAccessories);
-  }, [selectedAccessories]);
-
   const handleSubmit = () => {
     onSuccess(selectedAccessories);
     toast.current?.show({
@@ -152,7 +141,7 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
 
       <Sidebar
         selectedCar={selectedCar}
-        localizationData={localizationData as any}
+        localizationData={localizationData}
         accessories={selectedAccessories}
         protections={[]}
       />
