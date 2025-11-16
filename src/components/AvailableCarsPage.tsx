@@ -117,9 +117,9 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
     };
   }, [availabilityData.filtroValorReserva, filteredCars]);
 
-  useEffect(() => {
-    setPriceRange(initialPriceRange);
-  }, [initialPriceRange, setPriceRange]);
+  // useEffect(() => {
+  //   setPriceRange(initialPriceRange);
+  // }, [initialPriceRange, setPriceRange]);
 
   const handleCarSelect = (car: Car) => {
     if (selectedCar === car) {
@@ -196,12 +196,12 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
 
         {/* Conteúdo Principal */}
         <main className="main-content">
-          <PriceFilter
+          {/* <PriceFilter
             min={initialPriceRange.min}
             max={initialPriceRange.max}
             value={[priceRange.min, priceRange.max]}
             onChange={(range) => setPriceRange({ min: range[0], max: range[1] })}
-          />
+          /> */}
 
           <CarList
             cars={filteredCars}

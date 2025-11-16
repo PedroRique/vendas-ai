@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Tag } from 'primereact/tag';
 import './AutocompleteInput.scss';
 
 export interface AutocompleteItem {
@@ -8,6 +9,8 @@ export interface AutocompleteItem {
   qtLojas?: number;
   descricao?: string;
   codigo?: string;
+  rentalCompanyId?: number;
+  rentalCompanyName?: string;
 }
 
 export interface AutocompleteCategory {
@@ -24,6 +27,7 @@ interface AutocompleteInputProps {
   placeholder?: string;
   className?: string;
   required?: boolean;
+  loading?: boolean;
 }
 
 const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
@@ -34,6 +38,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   placeholder = 'Digite para buscar...',
   className = '',
   required = false,
+  loading = false,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -106,19 +111,24 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   };
 
   return (
-    <div className={`autocomplete-input ${className}`}>
-      <input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        placeholder={placeholder}
-        className="autocomplete-input-field"
-        required={required}
-        autoComplete="off"
-      />
+    <div className={`autocomplete-input ${className} ${loading ? '-loading' : ''}`}>
+      <div className="autocomplete-input-wrapper">
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          placeholder={placeholder}
+          className="autocomplete-input-field"
+          required={required}
+          autoComplete="off"
+        />
+        {loading && (
+          <i className="pi pi-spin pi-spinner autocomplete-loading-icon" />
+        )}
+      </div>
       
       {showDropdown && hasResults && (
         <div ref={dropdownRef} className="autocomplete-dropdown">
@@ -142,9 +152,18 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
                         <i className={getIconClass(category.icon)} />
                       )}
                       <div className="autocomplete-item-content">
-                        <p className="autocomplete-item-name">
-                          {getDisplayName(item)}
-                        </p>
+                        <div className="autocomplete-item-header">
+                          <p className="autocomplete-item-name">
+                            {getDisplayName(item)}
+                          </p>
+                          {item.rentalCompanyName && (
+                            <Tag
+                              value={item.rentalCompanyName}
+                              severity="info"
+                              className="autocomplete-company-tag"
+                            />
+                          )}
+                        </div>
                         {item.qtLojas !== undefined && (
                           <p className="autocomplete-item-meta">
                             {item.qtLojas} lojas de atendimento

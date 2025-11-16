@@ -21,12 +21,14 @@ export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitializing: boolean;
   error: string | null;
 }
 
 class AuthService {
   private user: User | null = null;
   private listeners: Array<(state: AuthState) => void> = [];
+  private isInitializing: boolean = false;
 
   constructor() {
     // Verifica se há um usuário salvo no localStorage
@@ -52,12 +54,14 @@ class AuthService {
   private async updateUserRoleIfNeeded() {
     // Se o usuário não tem role ou tem role padrão, tentar buscar do servidor
     if (this.user && this.user.id && (!this.user.role || this.user.role === 'operator')) {
+      this.isInitializing = true;
+      this.notifyListeners();
+      
       try {
         const userInfo = await apiService.getUser(this.user.id);
         if (userInfo.user?.role) {
           this.user.role = userInfo.user.role;
           this.saveUserToStorage(this.user);
-          this.notifyListeners();
         }
       } catch (error) {
         console.warn('Não foi possível atualizar role do usuário:', error);
@@ -65,6 +69,9 @@ class AuthService {
         if (!this.user.role) {
           this.user.role = 'operator';
         }
+      } finally {
+        this.isInitializing = false;
+        this.notifyListeners();
       }
     }
   }
@@ -87,6 +94,7 @@ class AuthService {
       user: this.user,
       isAuthenticated: !!this.user,
       isLoading: false,
+      isInitializing: this.isInitializing,
       error: null,
     };
   }
@@ -105,6 +113,10 @@ class AuthService {
   // Métodos de autenticação
   async login(credentials: LoginRequest): Promise<void> {
     try {
+      // Marcar como inicializando
+      this.isInitializing = true;
+      this.notifyListeners();
+
       const response: LoginResponse = await apiService.login(credentials);
 
       // Verificar se há erros na resposta
@@ -130,6 +142,8 @@ class AuthService {
         };
         // Salvar token no localStorage antes de fazer a requisição
         this.saveUserToStorage(tempUser);
+        this.user = tempUser;
+        this.notifyListeners();
 
         // Buscar informações completas do usuário para obter o role
         let userRole = 'operator'; // Valor padrão
@@ -149,13 +163,16 @@ class AuthService {
           role: userRole,
         };
         this.saveUserToStorage(this.user);
-        this.notifyListeners();
       } else {
         throw new Error('Resposta inválida do servidor');
       }
     } catch (error) {
       this.clearUser();
       throw error;
+    } finally {
+      // Finalizar inicialização
+      this.isInitializing = false;
+      this.notifyListeners();
     }
   }
 

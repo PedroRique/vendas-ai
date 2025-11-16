@@ -1,11 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { Steps } from 'primereact/steps';
+import type { MenuItem } from 'primereact/menuitem';
 import './StepNavigationMenu.scss';
-
-interface MenuItem {
-  name: string;
-  step: string;
-  icon: string;
-}
 
 interface StepNavigationMenuProps {
   currentStep: string;
@@ -13,37 +9,23 @@ interface StepNavigationMenuProps {
   onStepChange: (step: string) => void;
 }
 
-const MENU_STEPS: MenuItem[] = [
-  {
-    name: 'Localização',
-    step: 'localization',
-    icon: 'location_on',
-  },
-  {
-    name: 'Veículos',
-    step: 'cars',
-    icon: 'directions_car',
-  },
-  {
-    name: 'Acessórios',
-    step: 'accessories',
-    icon: 'settings',
-  },
-  {
-    name: 'Proteções',
-    step: 'protections',
-    icon: 'beach_access',
-  },
-  {
-    name: 'Dados pessoais',
-    step: 'personal',
-    icon: 'person',
-  },
-  {
-    name: 'Finalização',
-    step: 'finalization',
-    icon: 'check_circle',
-  },
+const STEP_MAP: Record<string, number> = {
+  'localization': 0,
+  'cars': 1,
+  'accessories': 2,
+  'protections': 3,
+  'personal': 4,
+  'quotation': 4, // Mesmo índice que personal
+  'finalization': 5,
+};
+
+const STEP_LABELS = [
+  'Localização',
+  'Veículos',
+  'Acessórios',
+  'Proteções',
+  'Dados pessoais',
+  'Finalização',
 ];
 
 const StepNavigationMenu: React.FC<StepNavigationMenuProps> = ({
@@ -51,40 +33,36 @@ const StepNavigationMenu: React.FC<StepNavigationMenuProps> = ({
   currentStepIndex,
   onStepChange,
 }) => {
-  const isStepEnabled = (index: number): boolean => {
-    // Permite navegar para steps anteriores ou o atual
-    return index <= currentStepIndex;
-  };
+  const currentStepIndexValue = STEP_MAP[currentStep] ?? 0;
 
-  const handleStepClick = (step: string, index: number) => {
-    if (isStepEnabled(index)) {
-      onStepChange(step);
+  const items: MenuItem[] = useMemo(() => {
+    return STEP_LABELS.map((label, index) => ({
+      label,
+      disabled: index > currentStepIndex,
+    }));
+  }, [currentStepIndex]);
+
+  const handleStepSelect = (e: { index: number }) => {
+    const index = e.index;
+    // Permite navegar apenas para steps já visitados
+    if (index <= currentStepIndex) {
+      // Encontrar o step correspondente ao índice
+      const step = Object.keys(STEP_MAP).find(key => STEP_MAP[key] === index);
+      if (step) {
+        onStepChange(step);
+      }
     }
   };
 
   return (
-    <aside className="step-navigation-menu">
-      <ul className="menu-box">
-        {MENU_STEPS.map((menu, index) => {
-          const isActive = currentStep === menu.step;
-          const isEnabled = isStepEnabled(index);
-          
-          return (
-            <li key={menu.step}>
-              <button
-                className={`menu-item ${isActive ? '--active' : ''} ${!isEnabled ? '--disabled' : ''}`}
-                onClick={() => handleStepClick(menu.step, index)}
-                disabled={!isEnabled}
-                title={menu.name}
-                aria-label={menu.name}
-              >
-                <i className="material-icons">{menu.icon}</i>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </aside>
+    <div className="step-navigation-stepper">
+      <Steps 
+        model={items}
+        activeIndex={currentStepIndexValue}
+        onSelect={handleStepSelect}
+        readOnly={false}
+      />
+    </div>
   );
 };
 

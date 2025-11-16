@@ -32,7 +32,7 @@ export const useAuth = () => {
 
   const isAdmin = useMemo(() => {
     return authService.isAdmin();
-  }, []);
+  }, [authState.user]);
 
   return {
     ...authState,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import LocalizationForm from './LocalizationForm';
 import AvailableCarsPage from './AvailableCarsPage';
@@ -47,7 +48,18 @@ interface PersonalData {
 
 const Dashboard: React.FC = () => {
   const { user, logout, isAdmin } = useAuth();
-  const [currentPage, setCurrentPage] = useState<'reserve' | 'reservas' | 'admin'>('reserve');
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Determinar a página atual baseado na rota
+  const getCurrentPageFromPath = (): 'reserve' | 'reservas' | 'admin' => {
+    const path = location.pathname;
+    if (path.startsWith('/reservas')) return 'reservas';
+    if (path.startsWith('/admin')) return 'admin';
+    return 'reserve';
+  };
+  
+  const currentPage = getCurrentPageFromPath();
   const [currentStep, setCurrentStep] = useState<'localization' | 'cars' | 'accessories' | 'protections' | 'personal' | 'quotation' | 'finalization'>('localization');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [localizationData, setLocalizationData] = useState<LocalizationFormData | null>(null);
@@ -86,7 +98,7 @@ const Dashboard: React.FC = () => {
       initializeAttendance();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agencyCode, currentPage]);
+  }, [agencyCode, location.pathname]);
 
   // Função para mapear step para índice
   const getStepIndex = (step: string): number => {
@@ -338,7 +350,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reserve Aqui"
               icon="pi pi-shopping-cart"
-              onClick={() => setCurrentPage('reserve')}
+              onClick={() => navigate('/reserve')}
               severity="secondary"
               outlined
               size="small"
@@ -346,7 +358,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reservas"
               icon="pi pi-list"
-              onClick={() => setCurrentPage('reservas')}
+              onClick={() => navigate('/reservas')}
               severity="secondary"
               outlined
               size="small"
@@ -375,7 +387,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reserve Aqui"
               icon="pi pi-shopping-cart"
-              onClick={() => setCurrentPage('reserve')}
+              onClick={() => navigate('/reserve')}
               severity="secondary"
               outlined
               size="small"
@@ -384,7 +396,7 @@ const Dashboard: React.FC = () => {
               <Button
                 label="Área Admin"
                 icon="pi pi-cog"
-                onClick={() => setCurrentPage('admin')}
+                onClick={() => navigate('/admin')}
                 severity="secondary"
                 outlined
                 size="small"
@@ -413,7 +425,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reservas"
               icon="pi pi-list"
-              onClick={() => setCurrentPage('reservas')}
+              onClick={() => navigate('/reservas')}
               severity="secondary"
               outlined
               size="small"
@@ -422,7 +434,7 @@ const Dashboard: React.FC = () => {
               <Button
                 label="Área Admin"
                 icon="pi pi-cog"
-                onClick={() => setCurrentPage('admin')}
+                onClick={() => navigate('/admin')}
                 severity="secondary"
                 outlined
                 size="small"
@@ -466,7 +478,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reservas"
               icon="pi pi-list"
-              onClick={() => setCurrentPage('reservas')}
+              onClick={() => navigate('/reservas')}
               severity="secondary"
               outlined
               size="small"
@@ -475,7 +487,7 @@ const Dashboard: React.FC = () => {
               <Button
                 label="Área Admin"
                 icon="pi pi-cog"
-                onClick={() => setCurrentPage('admin')}
+                onClick={() => navigate('/admin')}
                 severity="secondary"
                 outlined
                 size="small"
@@ -519,7 +531,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reservas"
               icon="pi pi-list"
-              onClick={() => setCurrentPage('reservas')}
+              onClick={() => navigate('/reservas')}
               severity="secondary"
               outlined
               size="small"
@@ -528,7 +540,7 @@ const Dashboard: React.FC = () => {
               <Button
                 label="Área Admin"
                 icon="pi pi-cog"
-                onClick={() => setCurrentPage('admin')}
+                onClick={() => navigate('/admin')}
                 severity="secondary"
                 outlined
                 size="small"
@@ -574,7 +586,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reservas"
               icon="pi pi-list"
-              onClick={() => setCurrentPage('reservas')}
+              onClick={() => navigate('/reservas')}
               severity="secondary"
               outlined
               size="small"
@@ -583,7 +595,7 @@ const Dashboard: React.FC = () => {
               <Button
                 label="Área Admin"
                 icon="pi pi-cog"
-                onClick={() => setCurrentPage('admin')}
+                onClick={() => navigate('/admin')}
                 severity="secondary"
                 outlined
                 size="small"
@@ -632,7 +644,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reservas"
               icon="pi pi-list"
-              onClick={() => setCurrentPage('reservas')}
+              onClick={() => navigate('/reservas')}
               severity="secondary"
               outlined
               size="small"
@@ -641,7 +653,7 @@ const Dashboard: React.FC = () => {
               <Button
                 label="Área Admin"
                 icon="pi pi-cog"
-                onClick={() => setCurrentPage('admin')}
+                onClick={() => navigate('/admin')}
                 severity="secondary"
                 outlined
                 size="small"
@@ -692,7 +704,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reservas"
               icon="pi pi-list"
-              onClick={() => setCurrentPage('reservas')}
+              onClick={() => navigate('/reservas')}
               severity="secondary"
               outlined
               size="small"
@@ -701,7 +713,7 @@ const Dashboard: React.FC = () => {
               <Button
                 label="Área Admin"
                 icon="pi pi-cog"
-                onClick={() => setCurrentPage('admin')}
+                onClick={() => navigate('/admin')}
                 severity="secondary"
                 outlined
                 size="small"
@@ -789,7 +801,7 @@ const Dashboard: React.FC = () => {
             <Button
               label="Reservas"
               icon="pi pi-list"
-              onClick={() => setCurrentPage('reservas')}
+              onClick={() => navigate('/reservas')}
               severity="secondary"
               outlined
               size="small"
@@ -798,7 +810,7 @@ const Dashboard: React.FC = () => {
               <Button
                 label="Área Admin"
                 icon="pi pi-cog"
-                onClick={() => setCurrentPage('admin')}
+                onClick={() => navigate('/admin')}
                 severity="secondary"
                 outlined
                 size="small"

@@ -103,7 +103,7 @@ const CarFilters: React.FC<CarFiltersProps> = ({
         )}
 
         {/* Locadoras */}
-        {carrentalFilters.length > 1 && (
+        {carrentalFilters.length > 0 && (
           <AccordionTab header="Locadoras">
             {renderFilterList(carrentalFilters, 'carrental')}
           </AccordionTab>

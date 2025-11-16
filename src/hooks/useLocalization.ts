@@ -55,6 +55,7 @@ interface UseLocalizationReturn {
   // Status
   isLoading: boolean;
   isLoadingLocations: boolean;
+  locationError: Error | null;
 }
 
 export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn => {
@@ -111,6 +112,7 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
   // Status
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
+  const [locationError, setLocationError] = useState<Error | null>(null);
 
   // Load locadoras on mount
   useEffect(() => {
@@ -201,19 +203,27 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
         districts: [],
         stores: [],
       });
+      setLocationError(null);
       return;
     }
 
     setIsLoadingLocations(true);
+    setLocationError(null);
     try {
       const locadorasToUse = selectedLocadoras.length > 0 ? selectedLocadoras : undefined;
       const response = await localizationService.getLocations(search, agencyCode, locadorasToUse);
       
-      // Process stores
-      const stores: LocationPlace[] = response.TodasLojas.map(loja => ({
-        ...loja,
-        qtLojas: 1,
-      }));
+      // Process stores - preservar rentalCompanyId e rentalCompanyName se existirem
+      const stores: LocationPlace[] = response.TodasLojas.map(loja => {
+        const lojaWithCompany = loja as LocationPlace & { rentalCompanyId?: number; rentalCompanyName?: string };
+        return {
+          ...loja,
+          qtLojas: 1,
+          // Preservar rentalCompanyId e rentalCompanyName se existirem
+          rentalCompanyId: lojaWithCompany.rentalCompanyId,
+          rentalCompanyName: lojaWithCompany.rentalCompanyName,
+        };
+      });
       
       setLocations({
         airports: response.Aeroportos || [],
@@ -221,8 +231,41 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
         districts: response.Bairro || [],
         stores,
       });
+      
+      // Verificar se há erros na resposta (mesmo com dados válidos)
+      if (response.errors && Array.isArray(response.errors) && response.errors.length > 0) {
+        // Criar um erro agregado com todas as mensagens
+        const errorMessages = response.errors
+          .map((err: unknown) => {
+            const error = err as { message?: string; code?: string };
+            return error.message || `Erro ${error.code || 'desconhecido'}`;
+          })
+          .join('; ');
+        const errorObj = new Error(errorMessages);
+        // Adicionar os erros individuais como propriedade para acesso posterior
+        (errorObj as Error & { apiErrors: unknown[] }).apiErrors = response.errors;
+        setLocationError(errorObj);
+      } else {
+        setLocationError(null);
+      }
     } catch (error) {
       console.error('Error searching locations:', error);
+      const errorObj = error instanceof Error ? error : new Error('Erro ao buscar locais');
+      
+      // Preservar apiErrors se existirem no erro original
+      if (error instanceof Error && 'apiErrors' in error) {
+        (errorObj as Error & { apiErrors: unknown[] }).apiErrors = (error as Error & { apiErrors: unknown[] }).apiErrors;
+        
+        // Se houver apiErrors, ainda tentar processar dados se existirem
+        // Mas isso só aconteceria se o searchStores retornasse dados mesmo com erro
+        // Por enquanto, apenas definir o erro
+      }
+      
+      setLocationError(errorObj);
+      
+      // Só limpar locations se realmente não houver dados
+      // Se o erro tiver apiErrors mas também dados, os dados já foram processados acima
+      // Mas como estamos no catch, significa que deu erro, então limpar
       setLocations({
         airports: [],
         cities: [],
@@ -388,6 +431,7 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
     // Status
     isLoading,
     isLoadingLocations,
+    locationError,
   };
 };
 

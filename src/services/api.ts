@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../config/environment';
+import { authService } from './auth';
 
 // ==================== TIPOS DE AUTENTICAÇÃO ====================
 
@@ -569,10 +570,66 @@ class ApiService {
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
-        );
+        // Se o erro for 401 (Unauthorized), fazer logout e limpar token
+        if (response.status === 401) {
+          // Limpar autenticação antes de processar a resposta
+          await authService.logout();
+          // Lançar erro específico para que o componente possa tratar se necessário
+          throw new Error('Sessão expirada. Por favor, faça login novamente.');
+        }
+
+        // Para outros erros, tentar ler a mensagem de erro do servidor
+        let errorMessage = `Erro ${response.status}`;
+        let apiErrors: ApiError[] | null = null;
+        
+        try {
+          const errorData = await response.json();
+          
+          // Verificar se há array de erros na resposta (mesmo com status 500)
+          if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+            apiErrors = errorData.errors;
+            // Se houver array de erros, pegar a primeira mensagem como mensagem principal
+            const firstError = errorData.errors[0];
+            errorMessage = firstError.message || firstError.text || errorMessage;
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = typeof errorData.error === 'string' 
+              ? errorData.error 
+              : errorData.error.message || errorMessage;
+          } else if (errorData.title) {
+            errorMessage = errorData.title;
+          } else if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          }
+          
+          // Mensagens específicas para códigos de status comuns
+          if (response.status === 500) {
+            errorMessage = errorMessage || 'Erro interno do servidor. Tente novamente mais tarde.';
+          } else if (response.status === 404) {
+            errorMessage = errorMessage || 'Recurso não encontrado.';
+          } else if (response.status === 403) {
+            errorMessage = errorMessage || 'Acesso negado.';
+          } else if (response.status >= 500) {
+            errorMessage = errorMessage || 'Erro no servidor. Tente novamente mais tarde.';
+          }
+        } catch {
+          // Se não conseguir parsear JSON, usar mensagem padrão baseada no status
+          if (response.status === 500) {
+            errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
+          } else if (response.status >= 500) {
+            errorMessage = 'Erro no servidor. Tente novamente mais tarde.';
+          } else {
+            errorMessage = `Erro ${response.status}: ${response.statusText || 'Erro desconhecido'}`;
+          }
+        }
+        
+        // Criar erro com informações dos erros da API se houver
+        const error = new Error(errorMessage);
+        if (apiErrors) {
+          (error as Error & { apiErrors: ApiError[] }).apiErrors = apiErrors;
+        }
+        throw error;
       }
 
       const data = await response.json();
@@ -680,10 +737,70 @@ class ApiService {
   async searchStores(
     data: SearchStoresRequest
   ): Promise<SearchStoresResponse> {
-    return this.request<SearchStoresResponse>('searchStores', {
+    const url = `${this.baseURL}searchStores`;
+    const token = this.getAuthToken();
+
+    const defaultHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      defaultHeaders['Authorization'] = `Bearer ${token}`;
+    }
+
+    const config: RequestInit = {
       method: 'POST',
+      headers: defaultHeaders,
       body: JSON.stringify(data),
-    });
+    };
+
+    try {
+      const response = await fetch(url, config);
+      
+      // Tentar ler o JSON independente do status
+      let responseData: SearchStoresResponse;
+      try {
+        responseData = await response.json();
+      } catch {
+        // Se não conseguir parsear JSON, lançar erro
+        throw new Error(`Erro ${response.status}: Não foi possível processar a resposta do servidor.`);
+      }
+
+      // Se a resposta não está OK, verificar se há dados válidos
+      if (!response.ok) {
+        // Se houver rentalCompanies com dados, retornar os dados mesmo com erro
+        if (responseData.rentalCompanies && Array.isArray(responseData.rentalCompanies) && responseData.rentalCompanies.length > 0) {
+          // Retornar os dados disponíveis junto com os erros
+          return responseData;
+        }
+        
+        // Se não houver dados válidos, tratar como erro
+        // Se o erro for 401 (Unauthorized), fazer logout
+        if (response.status === 401) {
+          await authService.logout();
+          throw new Error('Sessão expirada. Por favor, faça login novamente.');
+        }
+
+        // Para outros erros, criar mensagem de erro
+        let errorMessage = `Erro ${response.status}`;
+        if (responseData.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+          const firstError = responseData.errors[0];
+          errorMessage = firstError.message || errorMessage;
+        }
+        
+        const error = new Error(errorMessage);
+        if (responseData.errors) {
+          (error as Error & { apiErrors: ApiError[] }).apiErrors = responseData.errors;
+        }
+        throw error;
+      }
+
+      // Se tudo OK, retornar os dados normalmente
+      return responseData;
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
   }
 
   // ==================== MÉTODOS DE DISPONIBILIDADE ====================
@@ -722,7 +839,7 @@ class ApiService {
 
   async getLocations(
     data: GetLocationsRequest
-  ): Promise<LocationsResponse> {
+  ): Promise<LocationsResponse & { errors?: ApiError[] | null }> {
     // Adaptar para usar searchStores da nova API
     const searchStoresData: SearchStoresRequest = {
       rentalCompaniesIds: [1, 2, 3, 4], // Todas as locadoras
@@ -749,14 +866,17 @@ class ApiService {
     const response = await this.searchStores(searchStoresData);
 
     // Transformar resposta da nova API para formato legado
-    const locations: LocationsResponse = {
+    const locations: LocationsResponse & { errors?: ApiError[] | null } = {
       dados: {
         Aeroportos: [],
         TodasLojas: [],
         Cidades: [],
         Bairro: [],
       },
+      errors: response.errors || null,
     };
+
+    // Processar dados mesmo se houver erros (pode ter dados parciais)
 
     response.rentalCompanies.forEach((company) => {
       company.stores.forEach((store) => {
@@ -765,6 +885,8 @@ class ApiService {
           sigla: store.acronym,
           lojas: [store.acronym],
           qtLojas: 1,
+          rentalCompanyId: company.rentalCompanyId,
+          rentalCompanyName: company.rentalCompanyName,
         });
 
         if (store.city && !locations.dados.Cidades.find((c) => c.nome === store.city)) {
@@ -1231,6 +1353,8 @@ export interface Location {
   sigla?: string;
   lojas?: string[];
   qtLojas: number;
+  rentalCompanyId?: number;
+  rentalCompanyName?: string;
 }
 
 export interface LocationsResponse {

@@ -1,18 +1,41 @@
+@import '../styles/variables';
+
 .autocomplete-input {
   position: relative;
   width: 100%;
 
+  .autocomplete-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
   .autocomplete-input-field {
     width: 100%;
     padding: 0.5rem;
+    padding-right: 2.5rem; // Espaço para o ícone de loading
     border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-base;
 
     &:focus {
       outline: none;
       border-color: #007bff;
       box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+  }
+
+  .autocomplete-loading-icon {
+    position: absolute;
+    right: $spacing-sm;
+    color: $text-secondary;
+    font-size: $font-size-base;
+    pointer-events: none;
+  }
+
+  &.-loading {
+    .autocomplete-input-field {
+      padding-right: 2.5rem;
     }
   }
 
@@ -76,11 +99,29 @@
           .autocomplete-item-content {
             flex: 1;
 
+            .autocomplete-item-header {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: $spacing-sm;
+              flex-wrap: wrap;
+              width: 100%;
+            }
+
             .autocomplete-item-name {
               margin: 0;
               font-size: 0.875rem;
               color: #333;
               font-weight: 500;
+              flex: 1;
+              min-width: 0; // Permite que o texto quebre se necessário
+            }
+
+            .autocomplete-company-tag {
+              font-size: $font-size-xs;
+              padding: 0.125rem 0.5rem;
+              flex-shrink: 0; // Não encolhe
+              margin-left: auto; // Empurra para a direita
             }
 
             .autocomplete-item-meta {

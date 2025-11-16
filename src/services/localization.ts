@@ -8,6 +8,8 @@ export interface LocationPlace {
   sigla?: string;
   lojas?: string[];
   qtLojas: number;
+  rentalCompanyId?: number;
+  rentalCompanyName?: string;
 }
 
 export interface LocalizationFormData {
@@ -57,7 +59,7 @@ export class LocalizationService {
     search: string,
     codAgencia: number | null | undefined,
     locadoras?: string[]
-  ): Promise<LocationsResponse['dados']> {
+  ): Promise<LocationsResponse['dados'] & { errors?: unknown[] }> {
     try {
       if (search.length < 3) {
         return {
@@ -91,7 +93,16 @@ export class LocalizationService {
 
       const response = await apiService.getLocations(requestData);
 
-      return response.dados;
+      // Retornar dados com erros se houver
+      const result: LocationsResponse['dados'] & { errors?: unknown[] } = {
+        ...response.dados,
+      };
+      
+      if (response.errors && Array.isArray(response.errors) && response.errors.length > 0) {
+        result.errors = response.errors;
+      }
+      
+      return result;
     } catch (error) {
       console.error('Error fetching locations:', error);
       throw error;

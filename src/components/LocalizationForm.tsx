@@ -74,6 +74,7 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
     // Status
     isLoading,
     isLoadingLocations,
+    locationError,
   } = useLocalization(agencyCode || (user && 'id_carrental' in user ? (user.id_carrental as number) : 100) || 100);
 
   const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
@@ -154,6 +155,36 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
       }
     };
   }, [searchTimeout]);
+
+  // Show toast when location error occurs
+  useEffect(() => {
+    if (locationError) {
+      // Verificar se há erros individuais da API
+      const apiErrors = (locationError as Error & { apiErrors?: unknown[] })?.apiErrors;
+      
+      if (apiErrors && Array.isArray(apiErrors) && apiErrors.length > 0) {
+        // Mostrar um toast para cada erro
+        apiErrors.forEach((error: { message?: string; code?: string }) => {
+          const errorMessage = error.message || `Erro ${error.code || 'desconhecido'}`;
+          toast.current?.show({
+            severity: 'error',
+            summary: 'Erro',
+            detail: errorMessage,
+            life: 5000,
+          });
+        });
+      } else {
+        // Se não houver erros individuais, mostrar o erro geral
+        const errorMessage = locationError.message || 'Erro ao buscar locais. Tente novamente.';
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Erro',
+          detail: errorMessage,
+          life: 5000,
+        });
+      }
+    }
+  }, [locationError]);
 
   // Check if can show franchise
   const canShowFranchise = (): boolean => {
@@ -350,6 +381,7 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
               placeholder="Digite a cidade ou o aeroporto"
               className="location-autocomplete"
               required
+              loading={isLoadingLocations}
             />
           </div>
 
@@ -381,6 +413,7 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
                 placeholder="Digite a cidade ou o aeroporto"
                 className="location-autocomplete"
                 required
+                loading={isLoadingLocations}
               />
             </div>
           )}
