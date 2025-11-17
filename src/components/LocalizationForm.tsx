@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import { useLocalization } from '../hooks/useLocalization';
 import { localizationService, type LocationPlace } from '../services/localization';
 import { useAuth } from '../hooks/useAuth';
-import { useReservation } from '../contexts/ReservationContext';
+import { useReservation } from '../contexts/useReservation';
 import AutocompleteInput, { type AutocompleteCategory } from './AutocompleteInput';
 import DatePicker from './DatePicker';
 import TimePicker from './TimePicker';
