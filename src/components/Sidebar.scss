@@ -1,20 +1,15 @@
+@import '../styles/variables';
+
 .sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 350px;
-  height: calc(100vh - 75px);
-  background-color: #ffffff;
-  border-left: 1px solid #e0e0e0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  background-color: $white;
   z-index: 100;
-  color: #4a4a4a;
-  padding: 0 0 0 25px;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  color: $text-primary;
+  padding: $spacing-md;
+  box-shadow: $button-shadow;
+  border-radius: 8px;
+  min-width: 350px;
 
   &-content {
-    max-height: calc(100vh - 120px);
     padding-bottom: 1rem;
 
     .btn-copy {
@@ -137,7 +132,6 @@
   }
 
   &-footer {
-    position: fixed;
     bottom: 0;
     right: 0;
     width: 350px;

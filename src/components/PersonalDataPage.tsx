@@ -11,6 +11,9 @@ import { validateCPF } from '../utils/cpfValidator';
 import { formatCPF, cleanCPF } from '../utils/cpfMask';
 import { formatPhoneBR, cleanPhone } from '../utils/phoneMask';
 import { SORTED_DDI_LIST } from '../utils/ddiList';
+import type { Car } from '../hooks/useCarFilters';
+import type { Accessory } from './AccessoriesPage';
+import type { Protection } from './ProtectionsPage';
 import Sidebar from './Sidebar';
 import './PersonalDataPage.scss';
 
@@ -26,10 +29,10 @@ export interface PersonalData {
 }
 
 interface PersonalDataPageProps {
-  selectedCar: Record<string, unknown>;
+  selectedCar: Car;
   localizationData: Record<string, unknown>;
-  accessories: Array<Record<string, unknown>>;
-  protections: Array<Record<string, unknown>>;
+  accessories: Accessory[];
+  protections: Protection[];
   onSuccess: (personalData: PersonalData, isNewCustomer: boolean) => void;
   onQuotation?: (personalData: PersonalData, isNewCustomer: boolean) => void;
   onAbort?: () => void;
@@ -223,8 +226,9 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
         summary: 'Cliente encontrado',
         detail: 'Dados do cliente carregados com sucesso.',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Cliente não encontrado - limpar campos
+      console.error('Erro ao buscar cliente:', error);
       setPersonal({
         ...personal,
         name: '',
@@ -344,12 +348,13 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
         summary: 'Sucesso',
         detail: 'Dados pessoais salvos com sucesso.',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar dados pessoais:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível salvar os dados pessoais.';
       toast.current?.show({
         severity: 'error',
         summary: 'Erro',
-        detail: error.message || 'Não foi possível salvar os dados pessoais.',
+        detail: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -426,12 +431,13 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
         summary: 'Sucesso',
         detail: 'Dados pessoais salvos com sucesso.',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar dados pessoais:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível salvar os dados pessoais.';
       toast.current?.show({
         severity: 'error',
         summary: 'Erro',
-        detail: error.message || 'Não foi possível salvar os dados pessoais.',
+        detail: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -635,10 +641,10 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
       </Card>
 
       <Sidebar
-        selectedCar={selectedCar as any}
-        localizationData={localizationData as any}
-        accessories={accessories as any}
-        protections={protections as any}
+        selectedCar={selectedCar}
+        localizationData={localizationData}
+        accessories={accessories}
+        protections={protections}
         personalData={personal}
       />
     </div>

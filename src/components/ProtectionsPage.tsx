@@ -3,6 +3,7 @@ import { Button } from 'primereact/button';
 import { RadioButton } from 'primereact/radiobutton';
 import { Toast } from 'primereact/toast';
 import { Card } from 'primereact/card';
+import { Tooltip } from 'primereact/tooltip';
 import type { Car } from '../hooks/useCarFilters';
 import type { Accessory } from './AccessoriesPage';
 import Sidebar from './Sidebar';
@@ -174,9 +175,10 @@ const ProtectionsPage: React.FC<ProtectionsPageProps> = ({
                       >
                         <span className="protection-name">{protection.nome}</span>
                         {protection.descricao && (
-                          <span className="protection-tooltip" title={protection.descricao}>
-                            <i className="pi pi-info-circle"></i>
-                          </span>
+                          <>
+                            <Tooltip target={`.protection-tooltip-${index}`} content={protection.descricao} position="top" />
+                            <i className={`pi pi-question-circle protection-tooltip protection-tooltip-${index}`}></i>
+                          </>
                         )}
                         <span className="protection-price">
                           {protection.obrigatorio ? (
@@ -224,9 +226,10 @@ const ProtectionsPage: React.FC<ProtectionsPageProps> = ({
                       >
                         <span className="protection-name">{protection.nome}</span>
                         {protection.descricao && (
-                          <span className="protection-tooltip" title={protection.descricao}>
-                            <i className="pi pi-info-circle"></i>
-                          </span>
+                          <>
+                            <Tooltip target={`.additional-protection-tooltip-${index}`} content={protection.descricao} position="top" />
+                            <i className={`pi pi-question-circle protection-tooltip additional-protection-tooltip-${index}`}></i>
+                          </>
                         )}
                         <span className="protection-price">
                           {protection.obrigatorio ? (
@@ -261,7 +264,7 @@ const ProtectionsPage: React.FC<ProtectionsPageProps> = ({
 
       <Sidebar
         selectedCar={selectedCar}
-        localizationData={localizationData as any}
+        localizationData={localizationData}
         accessories={accessories}
         protections={selectedProtections}
       />

@@ -1,53 +1,39 @@
+@import '../styles/variables';
+
 .protections-page {
-  &.sidebar-container {
-    // Layout será controlado pelo .sidebar-container no Sidebar.scss
-  }
   display: flex;
-  flex-direction: column;
   min-height: auto;
-  padding: 0;
   background: transparent;
   flex: 1;
+  gap: $spacing-xl;
+  padding: $spacing-xl;
 
   .protections-card {
-    width: 100%;
     flex: 1;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-    background: white;
-    margin-top: 2rem;
+    box-shadow: $button-shadow;
+    border-radius: $border-radius-md;
+    background: $white;
   }
 
   .protections-header {
-    padding: 1.5rem 2rem;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    margin: -1rem -1rem 2rem -1rem;
+    padding: $spacing-lg $spacing-xl;
 
     .main-title {
       margin: 0;
-      font-size: 2rem;
-      font-weight: 300;
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-normal;
     }
   }
 
   .protections-content {
-    padding: 0 2rem 2rem 2rem;
+    padding: 0 $spacing-xl $spacing-xl $spacing-xl;
 
     .protections-section {
-      margin-bottom: 2rem;
+      margin-bottom: $spacing-xl;
 
       &.additional-section {
-        margin-top: 3rem;
-        padding-top: 2rem;
-        border-top: 2px solid #e0e0e0;
-
         .section-title {
-          margin: 0 0 1.5rem 0;
-          font-size: 1.5rem;
-          font-weight: 600;
-          color: #333;
+          font-weight: $font-weight-normal;
         }
       }
 
@@ -58,18 +44,18 @@
 
         .empty-message {
           text-align: center;
-          padding: 2rem;
-          color: #666;
+          padding: $spacing-xl;
+          color: $text-secondary;
           font-size: 1.1rem;
         }
 
         .protection-item {
           display: flex;
           align-items: center;
-          padding: 1rem;
-          background: #fff;
+          padding: $spacing-md;
+          background: $white;
           border: 2px solid #e0e0e0;
-          border-radius: 8px;
+          border-radius: $border-radius-md;
           transition: all 0.2s ease;
           cursor: pointer;
 
@@ -79,7 +65,7 @@
           }
 
           .protection-radio {
-            margin-right: 1rem;
+            margin-right: $spacing-md;
           }
 
           .protection-label {
@@ -92,9 +78,9 @@
 
             .protection-name {
               flex: 1;
-              font-weight: 500;
-              color: #333;
-              font-size: 1rem;
+              font-weight: $font-weight-medium;
+              color: $text-primary;
+              font-size: $font-size-base;
             }
 
             .protection-tooltip {
@@ -108,9 +94,9 @@
             }
 
             .protection-price {
-              font-size: 1rem;
+              font-size: $font-size-base;
               color: #4facfe;
-              font-weight: 600;
+              font-weight: $font-weight-semibold;
               min-width: 120px;
               text-align: right;
 
@@ -133,11 +119,9 @@
     .protections-footer {
       display: flex;
       justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid #e0e0e0;
+      gap: $spacing-md;
+      margin-top: $spacing-xl;
+      padding-top: $spacing-xl;
     }
   }
 }
-

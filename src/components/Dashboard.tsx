@@ -2,6 +2,7 @@ import { Button } from "primereact/button";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { useReservation } from "../contexts/ReservationContext";
 import type { Car } from "../hooks/useCarFilters";
 import type { BookingResponse, QuotationRequest } from "../services/api";
 import { apiService } from "../services/api";
@@ -47,6 +48,7 @@ interface PersonalData {
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const { clearReservationState } = useReservation();
   const [currentStep, setCurrentStep] = useState<
     | "localization"
     | "cars"
@@ -131,6 +133,9 @@ const Dashboard: React.FC = () => {
     setProtocolo(null); // Limpar protocolo para gerar um novo
     setCurrentStep("localization");
     setCurrentStepIndex(0);
+    
+    // Limpar estado do formulário de localização no contexto
+    clearReservationState();
 
     // Iniciar um novo atendimento automaticamente
     try {

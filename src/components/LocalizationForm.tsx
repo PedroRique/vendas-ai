@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import { useLocalization } from '../hooks/useLocalization';
 import { localizationService, type LocationPlace } from '../services/localization';
 import { useAuth } from '../hooks/useAuth';
+import { useReservation } from '../contexts/ReservationContext';
 import AutocompleteInput, { type AutocompleteCategory } from './AutocompleteInput';
 import DatePicker from './DatePicker';
 import TimePicker from './TimePicker';
@@ -27,6 +28,7 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
   protocolo = null,
 }) => {
   const { user } = useAuth();
+  const { localizationFormState, setLocalizationFormState } = useReservation();
   const toast = React.useRef<Toast>(null);
   
   const {
@@ -80,6 +82,53 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
   const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [couponError, setCouponError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Restaurar estado do contexto quando o componente montar ou quando o estado mudar
+  useEffect(() => {
+    if (localizationFormState) {
+      // Restaurar locadoras
+      if (localizationFormState.selectedLocadoras.length > 0) {
+        setSelectedLocadoras(localizationFormState.selectedLocadoras);
+      }
+      
+      // Restaurar franchise KM
+      if (localizationFormState.selectedFranchiseKm) {
+        setSelectedFranchiseKm(localizationFormState.selectedFranchiseKm);
+      }
+      
+      // Restaurar lugares
+      if (localizationFormState.getCarPlace) {
+        selectGetCarPlace(localizationFormState.getCarPlace);
+        setGetCarWhere(localizationFormState.getCarWhere || localizationFormState.getCarPlace.nome || '');
+      }
+      
+      if (localizationFormState.retrievePlace) {
+        selectRetrievePlace(localizationFormState.retrievePlace);
+        setRetrieveWhere(localizationFormState.retrieveWhere || localizationFormState.retrievePlace.nome || '');
+      }
+      
+      // Restaurar datas
+      if (localizationFormState.getCarDate) {
+        setGetCarDate(localizationFormState.getCarDate);
+      }
+      if (localizationFormState.getCarHour) {
+        setGetCarHour(localizationFormState.getCarHour);
+      }
+      if (localizationFormState.retrieveDate) {
+        setRetrieveDate(localizationFormState.retrieveDate);
+      }
+      if (localizationFormState.retrieveHour) {
+        setRetrieveHour(localizationFormState.retrieveHour);
+      }
+      
+      // Restaurar outros campos
+      if (localizationFormState.coupon) {
+        setCoupon(localizationFormState.coupon);
+      }
+      setShowRetrieve(localizationFormState.showRetrieve);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localizationFormState]);
 
   // Prepare locadoras options for MultiSelect
   // Usar nomeAgencia como valor para garantir consistência com os filtros de carros
@@ -313,6 +362,22 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
         getCarPlace,
         retrievePlace: finalRetrievePlace,
       };
+
+      // Salvar estado no contexto para manter os dados quando voltar ao step
+      setLocalizationFormState({
+        selectedLocadoras,
+        selectedFranchiseKm: selectedFranchiseKm || null,
+        getCarPlace,
+        retrievePlace: finalRetrievePlace,
+        getCarWhere,
+        retrieveWhere: showRetrieve ? retrieveWhere : getCarWhere,
+        getCarDate,
+        getCarHour,
+        retrieveDate,
+        retrieveHour,
+        coupon: coupon || '',
+        showRetrieve,
+      });
 
       toast.current?.show({
         severity: 'success',

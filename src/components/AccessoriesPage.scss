@@ -1,49 +1,47 @@
+@import '../styles/variables';
+
 .accessories-page {
   display: flex;
-  flex-direction: column;
-  min-height: auto;
-  padding: 0;
-  background: transparent;
+  margin: 0 auto;
+  padding: $spacing-xl;
+  gap: $spacing-xl;
   flex: 1;
 
   .accessories-card {
     flex: 1;
-    margin: 0 auto;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    box-shadow: $button-shadow;
+    border-radius: $border-radius-md;
     overflow: hidden;
-    background: white;
-    margin-top: 2rem;
+    background: $white;
   }
 
   .accessories-header {
-    padding: 1.5rem 2rem;
+    padding: $spacing-lg $spacing-xl;
 
     .main-title {
       margin: 0;
-      font-size: 1.5rem;
-      font-weight: 300;
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-normal;
     }
   }
 
   .accessories-content {
-    padding: 0 2rem 2rem 2rem;
+    padding: 0 $spacing-xl $spacing-xl $spacing-xl;
 
     .empty-state {
       text-align: center;
-      padding: 2rem;
-      color: #666;
-      font-size: 1rem;
+      padding: $spacing-xl;
+      color: $text-secondary;
+      font-size: $font-size-base;
     }
 
     .accessories-footer {
       display: flex;
       justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 1.5rem;
-      padding-top: 1.5rem;
+      gap: $spacing-md;
+      margin-top: $spacing-lg;
+      padding-top: $spacing-lg;
       border-top: 1px solid #e0e0e0;
     }
   }
 }
-

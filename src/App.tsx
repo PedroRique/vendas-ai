@@ -7,6 +7,7 @@ import AdminPage from "./components/AdminPage";
 import LoginForm from "./components/LoginForm";
 import LoadingScreen from "./components/LoadingScreen";
 import { useAuth } from "./hooks/useAuth";
+import { ReservationProvider } from "./contexts/ReservationContext";
 
 function App() {
   const { isAuthenticated, isInitializing } = useAuth();
@@ -18,19 +19,21 @@ function App() {
 
   return (
     <div className="App">
-      <Routes>
-        {isAuthenticated ? (
-          <>
-            <Route path="/reserve/*" element={<Layout><Dashboard /></Layout>} />
-            <Route path="/reservas" element={<Layout><ReservasPage /></Layout>} />
-            <Route path="/admin" element={<Layout><AdminPage /></Layout>} />
-            <Route path="/" element={<Navigate to="/reserve" replace />} />
-            <Route path="*" element={<Navigate to="/reserve" replace />} />
-          </>
-        ) : (
-          <Route path="*" element={<LoginForm />} />
-        )}
-      </Routes>
+      <ReservationProvider>
+        <Routes>
+          {isAuthenticated ? (
+            <>
+              <Route path="/reserve/*" element={<Layout><Dashboard /></Layout>} />
+              <Route path="/reservas" element={<Layout><ReservasPage /></Layout>} />
+              <Route path="/admin" element={<Layout><AdminPage /></Layout>} />
+              <Route path="/" element={<Navigate to="/reserve" replace />} />
+              <Route path="*" element={<Navigate to="/reserve" replace />} />
+            </>
+          ) : (
+            <Route path="*" element={<LoginForm />} />
+          )}
+        </Routes>
+      </ReservationProvider>
     </div>
   );
 }

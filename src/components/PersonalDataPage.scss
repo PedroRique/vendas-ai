@@ -1,32 +1,26 @@
+@import '../styles/variables';
+
 .personal-data-page {
-  &.sidebar-container {
-    // Layout será controlado pelo .sidebar-container no Sidebar.scss
-  }
   display: flex;
-  flex-direction: column;
-  min-height: auto;
-  padding: 0;
-  background: transparent;
   flex: 1;
+  gap: 2rem;
+  padding: 2rem;
+  margin: 0 auto;
 
   .personal-data-card {
     width: 100%;
-    max-width: 600px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: 2rem;
+    min-width: 1000px;
+    box-shadow: $button-shadow;
+    border-radius: 8px;
   }
 
   .personal-data-header {
-    padding: 1.5rem 2rem;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    margin: -1rem -1rem 2rem -1rem;
+    padding: $spacing-md;
+    padding-bottom: $spacing-xl;
 
     .main-title {
       margin: 0;
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 300;
     }
   }
