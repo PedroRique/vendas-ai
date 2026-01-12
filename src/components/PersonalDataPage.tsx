@@ -8,7 +8,7 @@ import { Toast } from 'primereact/toast';
 import { Card } from 'primereact/card';
 import { apiService, DocumentTypesEnum } from '../services/api';
 import { validateCPF } from '../utils/cpfValidator';
-import { formatCPF, cleanCPF } from '../utils/cpfMask';
+import { cleanCPF } from '../utils/cpfMask';
 import { formatPhoneBR, cleanPhone } from '../utils/phoneMask';
 import { SORTED_DDI_LIST } from '../utils/ddiList';
 import type { Car } from '../hooks/useCarFilters';
@@ -92,26 +92,6 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
       value: ddi.fone,
     }));
   }, []);
-
-  // Formatar telefone ao digitar
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (ddiSelected === '0055') {
-      const formatted = formatPhoneBR(value);
-      setPersonal({ ...personal, tel: formatted });
-    } else {
-      setPersonal({ ...personal, tel: value });
-    }
-  };
-
-  // Formatar CPF ao digitar
-  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const formatted = formatCPF(value);
-    setCpfValue(formatted);
-    setPersonal({ ...personal, cpf: cleanCPF(formatted) });
-    setErrors({ ...errors, cpf: '' });
-  };
 
   // Validar CPF ao perder foco
   const handleCPFBlur = () => {
@@ -471,7 +451,9 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
                 value={cpfValue}
                 onChange={(e) => {
                   const value = e.value || '';
-                  handleCPFChange({ target: { value } } as React.ChangeEvent<HTMLInputElement>);
+                  setCpfValue(value);
+                  setPersonal({ ...personal, cpf: cleanCPF(value) });
+                  setErrors({ ...errors, cpf: '' });
                 }}
                 onBlur={handleCPFBlur}
                 placeholder="XXX.XXX.XXX-XX"
@@ -563,7 +545,8 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
                 value={personal.tel}
                 onChange={(e) => {
                   const value = e.value || '';
-                  handlePhoneChange({ target: { value } } as React.ChangeEvent<HTMLInputElement>);
+                  setPersonal({ ...personal, tel: value });
+                  setErrors({ ...errors, tel: '' });
                 }}
                 placeholder={ddiSelected === '0055' ? '(XX) XXXXX-XXXX' : 'Número do telefone'}
                 className={`phone-input ${errors.tel ? 'p-invalid' : ''}`}
