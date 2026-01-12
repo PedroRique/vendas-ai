@@ -21,6 +21,13 @@ function App() {
     <div className="App">
       <ReservationProvider>
         <Routes>
+          {/* Rota de login */}
+          <Route 
+            path="/login" 
+            element={isAuthenticated ? <Navigate to="/reserve" replace /> : <LoginForm />} 
+          />
+          
+          {/* Rotas protegidas */}
           {isAuthenticated ? (
             <>
               <Route path="/reserve/*" element={<Layout><Dashboard /></Layout>} />
@@ -30,7 +37,8 @@ function App() {
               <Route path="*" element={<Navigate to="/reserve" replace />} />
             </>
           ) : (
-            <Route path="*" element={<LoginForm />} />
+            /* Redireciona para login quando não autenticado */
+            <Route path="*" element={<Navigate to="/login" replace />} />
           )}
         </Routes>
       </ReservationProvider>
