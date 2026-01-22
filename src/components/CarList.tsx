@@ -30,27 +30,28 @@ const CarList: React.FC<CarListProps> = ({
       }).format(value);
     };
 
-    let texto = car.dadosVeiculo.modelo;
+    let texto = car.vehicleData.model;
 
-    if (!car.dadosVeiculo.ehMensal) {
-      texto += `\nDiária: ${formatCurrency(car.dadosVeiculo.valorDiaria)}`;
-      texto += `\nTotal de diárias: ${car.dadosVeiculo.quantidadeDiarias}`;
-      texto += `\nValor total: ${formatCurrency(car.dadosVeiculo.valorTotal)} já com todas as taxas, quilometragem livre e proteção básica incluídos.`;
+    if (!car.vehicleData.isMonthly) {
+      texto += `\nDiária: ${formatCurrency(car.vehicleData.dailyValue)}`;
+      texto += `\nTotal de diárias: ${car.vehicleData.numberOfDays}`;
+      texto += `\nValor total: ${formatCurrency(car.vehicleData.totalValue)} já com todas as taxas, quilometragem livre e proteção básica incluídos.`;
       texto += '\nO valor das diárias pode ser parcelado em até 3x, sem acréscimos ou de 4x a 12x, com pequenos acréscimos, para facilitar ainda mais o seu planejamento.';
-      texto += `\nLembrando que será necessário apresentar um cartão de crédito no momento da retirada do veículo, com ${formatCurrency(car.dadosVeiculo.valorTotalCalcao)} de disponibilidade para garantia (caução).`;
+      texto += `\nLembrando que será necessário apresentar um cartão de crédito no momento da retirada do veículo, com ${formatCurrency(car.vehicleData.totalDepositValue)} de disponibilidade para garantia (caução).`;
       texto += '\nFazendo a reserva agora você garante o preço e a disponibilidade do carro.';
       texto += '\nVamos reservar?';
     } else {
-      texto += `\nDiária: ${formatCurrency(car.dadosVeiculo.valorDiaria)}`;
-      texto += `\nTotal de diárias: ${car.dadosVeiculo.quantidadeDiarias}`;
-      texto += `\nValor total: ${formatCurrency(car.dadosVeiculo.valorTotal)} já com todas as taxas, e quilometragem no valor de ${franchiseKm || 'N/A'} KM e proteção básica incluídos`;
+      texto += `\nDiária: ${formatCurrency(car.vehicleData.dailyValue)}`;
+      texto += `\nTotal de diárias: ${car.vehicleData.numberOfDays}`;
+      texto += `\nValor total: ${formatCurrency(car.vehicleData.totalValue)} já com todas as taxas, e quilometragem no valor de ${franchiseKm || 'N/A'} KM e proteção básica incluídos`;
       
-      if (car.disponibilidadeFranquia?.periodos) {
-        texto += '\n' + formatPeriods(car.disponibilidadeFranquia.periodos);
+      // Note: disponibilidadeFranquia não existe mais na nova API, mas mantido para compatibilidade
+      if ((car as any).disponibilidadeFranquia?.periodos) {
+        texto += '\n' + formatPeriods((car as any).disponibilidadeFranquia.periodos);
       }
       
       texto += '\nReservas mensais parcelamos apenas em 3x sem juros.';
-      texto += `\nLembrando que será necessário apresentar um cartão de crédito no momento da retirada do veículo, com ${formatCurrency(car.dadosVeiculo.valorTotalCalcao)} de disponibilidade para garantia (caução).`;
+      texto += `\nLembrando que será necessário apresentar um cartão de crédito no momento da retirada do veículo, com ${formatCurrency(car.vehicleData.totalDepositValue)} de disponibilidade para garantia (caução).`;
       texto += '\nFazendo a reserva agora você garante o preço e a disponibilidade do carro.';
       texto += '\nVamos reservar?';
     }
@@ -113,7 +114,7 @@ const CarList: React.FC<CarListProps> = ({
       <div className="car-list-container">
         {cars.map((car, index) => (
           <CarCard
-            key={`${car.dadosVeiculo.codigoAcriss}-${car.dadosVeiculo.codigoAgencia}-${index}`}
+            key={`${car.vehicleData.vehicleGroupAcronym}-${car.rentalCompanyId || 0}-${index}`}
             car={car}
             isSelected={selectedCar === car}
             onSelect={onSelectCar}

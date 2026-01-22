@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import type { AvailableVehicle } from '../services/api';
 
 // Tipos baseados na estrutura do sistema antigo
 export interface CarFilter {
@@ -9,67 +10,11 @@ export interface CarFilter {
   disabled?: boolean;
 }
 
-export interface Car {
-  dadosVeiculo: {
-    modelo: string;
-    grupoVeiculo: string;
-    urlImagem: string;
-    nomeAgencia: string;
-    lugares: number;
-    cambioAutomatico: boolean;
-    arCondicionado: boolean;
-    numeroPortas: number;
-    capacidadeMala: number;
-    valorTotal: number;
-    valorDiaria: number;
-    valorPorDia: number;
-    valorTotalCalcao: number;
-    valorTotalFranquia: number;
-    quantidadeDiarias: number;
-    status: string;
-    codigoAcriss: string;
-    codigoAgencia: number;
-    ehMensal: boolean;
-    valorDiariaTotalMensal?: number;
-    valorTaxaRetorno?: number;
-    [key: string]: unknown;
-  };
-  pesquisaLocacao: {
-    localRetiradaNome: string;
-    localDevolucaoNome: string;
-  };
-  disponibilidadeFranquia?: {
-    periodos: Array<{
-      periodo: string;
-      dias: number;
-      valorTotalMensal: number;
-      taxaMensal: number;
-      valorDiaria: number;
-    }>;
-  };
-  dadosProtecoes?: Array<{
-    codigoProtecao: string;
-    nome: string;
-    descricao?: string;
-    obrigatorio: boolean;
-    valorTotal: number;
-    valorDiaria: number;
-    ordenacao?: number;
-    sigla?: string;
-    [key: string]: unknown;
-  }>;
-  dadosOpcionais?: Array<{
-    nome: string;
-    valorDiaria: number;
-    valorTotal: number;
-    quantidade?: number;
-    quantidadeMaxima?: number;
-    quantidadeMaximaDiariasSerCobrado?: number;
-    obrigatorio?: boolean;
-    selected?: boolean;
-    [key: string]: unknown;
-  }>;
+// Car type now uses English property names from AvailableVehicle
+export type Car = AvailableVehicle & {
   selected?: boolean;
+  rentalCompanyId?: number;
+  rentalCompanyName?: string;
   [key: string]: unknown;
 }
 
@@ -98,17 +43,17 @@ export interface UseCarFiltersReturn {
 }
 
 export const useCarFilters = (cars: Car[]): UseCarFiltersReturn => {
-  // Filtrar apenas carros disponíveis
+  // Filter only available cars
   const availableCars = useMemo(() => {
-    return cars.filter((car) => car.dadosVeiculo.status === 'Available');
+    return cars.filter((car) => car.vehicleData.totalValue > 0);
   }, [cars]);
 
-  // Calcular range de preços
+  // Calculate price range
   const initialPriceRange = useMemo(() => {
     if (availableCars.length === 0) {
       return { min: 0, max: 0 };
     }
-    const prices = availableCars.map((car) => car.dadosVeiculo.valorTotal);
+    const prices = availableCars.map((car) => car.vehicleData.totalValue);
     return {
       min: Math.min(...prices),
       max: Math.max(...prices),
@@ -118,56 +63,56 @@ export const useCarFilters = (cars: Car[]): UseCarFiltersReturn => {
   const [priceRange, setPriceRange] = useState<PriceRange>(initialPriceRange);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
 
-  // Obter locadoras únicas disponíveis
+  // Get unique rental companies available
   const availableLocadoras = useMemo(() => {
     const locadoras = new Set<string>();
     availableCars.forEach((car) => {
-      if (car.dadosVeiculo.nomeAgencia) {
-        locadoras.add(car.dadosVeiculo.nomeAgencia);
+      if (car.rentalCompanyName) {
+        locadoras.add(car.rentalCompanyName);
       }
     });
     return Array.from(locadoras).sort();
   }, [availableCars]);
 
-  // Aplicar filtros
+  // Apply filters
   const filteredCars = useMemo(() => {
     let filtered = [...availableCars];
 
-    // Filtro de preço
+    // Price filter
     filtered = filtered.filter((car) => {
-      const price = car.dadosVeiculo.valorTotal;
+      const price = car.vehicleData.totalValue;
       return price >= priceRange.min && price <= priceRange.max;
     });
 
-    // Filtros de características
+    // Feature filters
     if (activeFilters.lugares !== undefined) {
       filtered = filtered.filter(
-        (car) => car.dadosVeiculo.lugares > activeFilters.lugares!
+        (car) => car.vehicleData.numberOfSeats > activeFilters.lugares!
       );
     }
 
     if (activeFilters.cambioAutomatico !== undefined) {
       filtered = filtered.filter(
-        (car) => car.dadosVeiculo.cambioAutomatico === activeFilters.cambioAutomatico
+        (car) => car.vehicleData.isAutomaticTransmission === activeFilters.cambioAutomatico
       );
     }
 
     if (activeFilters.arCondicionado !== undefined) {
       filtered = filtered.filter(
-        (car) => car.dadosVeiculo.arCondicionado === activeFilters.arCondicionado
+        (car) => car.vehicleData.hasAirConditioning === activeFilters.arCondicionado
       );
     }
 
     if (activeFilters.numeroPortas !== undefined) {
       filtered = filtered.filter(
-        (car) => car.dadosVeiculo.numeroPortas === activeFilters.numeroPortas
+        (car) => car.vehicleData.numberOfDoors === activeFilters.numeroPortas
       );
     }
 
-    // Filtro de locadoras (múltipla seleção)
+    // Rental company filter (multiple selection)
     if (activeFilters.nomeAgencia && activeFilters.nomeAgencia.length > 0) {
       filtered = filtered.filter((car) =>
-        activeFilters.nomeAgencia!.includes(car.dadosVeiculo.nomeAgencia)
+        car.rentalCompanyName && activeFilters.nomeAgencia!.includes(car.rentalCompanyName)
       );
     }
 

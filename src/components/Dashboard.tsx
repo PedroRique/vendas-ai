@@ -22,10 +22,10 @@ import StepNavigationMenu from "./StepNavigationMenu";
 interface LocalizationFormData {
   localization: Record<string, unknown>;
   availability: {
-    veiculosDisponiveis: Car[];
-    filtroValorReserva?: {
-      minValorDisponibilidade: number;
-      maxValorDisponibilidade: number;
+    availableVehicles: Car[];
+    priceRangeFilter?: {
+      minAvailabilityValue: number;
+      maxAvailabilityValue: number;
     };
     [key: string]: unknown;
   };
@@ -226,24 +226,24 @@ const Dashboard: React.FC = () => {
     // Salvar dados pessoais e fazer booking
     if (selectedCar && localizationData && protocolo) {
       try {
-        // Construir pesquisaLocacao com os dados necessários
+        // Construir rentalSearch com os dados necessários
         const locData = localizationData.localization as Record<
           string,
           unknown
         >;
         const selectedCarWithLoc = {
           ...selectedCar,
-          pesquisaLocacao: {
-            ...selectedCar.pesquisaLocacao,
-            dataHoraDevolucao: (locData.dataHoraDevolucao as string) || "",
-            dataHoraRetirada: (locData.dataHoraRetirada as string) || "",
-            localRetiradaSigla:
+          rentalSearch: {
+            ...selectedCar.rentalSearch,
+            returnDateTime: (locData.dataHoraDevolucao as string) || "",
+            pickupDateTime: (locData.dataHoraRetirada as string) || "",
+            pickupStoreCode:
               (locData.locaisRetirada as string[])?.[0] ||
-              selectedCar.pesquisaLocacao.localRetiradaNome ||
+              selectedCar.rentalSearch.pickupStoreName ||
               "",
-            localDevolucaoSigla:
+            returnStoreCode:
               (locData.locaisDevolucao as string[])?.[0] ||
-              selectedCar.pesquisaLocacao.localDevolucaoNome ||
+              selectedCar.rentalSearch.returnStoreName ||
               "",
           },
         };
@@ -298,24 +298,24 @@ const Dashboard: React.FC = () => {
     // Quando clica em "Finalizar" na cotação
     if (selectedCar && localizationData && personalData && protocolo) {
       try {
-        // Construir pesquisaLocacao com os dados necessários
+        // Construir rentalSearch com os dados necessários
         const locData = localizationData.localization as Record<
           string,
           unknown
         >;
         const selectedCarWithLoc = {
           ...selectedCar,
-          pesquisaLocacao: {
-            ...selectedCar.pesquisaLocacao,
-            dataHoraDevolucao: (locData.dataHoraDevolucao as string) || "",
-            dataHoraRetirada: (locData.dataHoraRetirada as string) || "",
-            localRetiradaSigla:
+          rentalSearch: {
+            ...selectedCar.rentalSearch,
+            returnDateTime: (locData.dataHoraDevolucao as string) || "",
+            pickupDateTime: (locData.dataHoraRetirada as string) || "",
+            pickupStoreCode:
               (locData.locaisRetirada as string[])?.[0] ||
-              selectedCar.pesquisaLocacao.localRetiradaNome ||
+              selectedCar.rentalSearch.pickupStoreName ||
               "",
-            localDevolucaoSigla:
+            returnStoreCode:
               (locData.locaisDevolucao as string[])?.[0] ||
-              selectedCar.pesquisaLocacao.localDevolucaoNome ||
+              selectedCar.rentalSearch.returnStoreName ||
               "",
           },
         };

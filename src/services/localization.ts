@@ -115,10 +115,10 @@ export class LocalizationService {
   async verifyAvailableCars(
     codigoAgencia: number,
     data: VerifyAvailableCarsRequest
-  ): Promise<AvailableCarsResponse['dados']> {
+  ): Promise<AvailableCarsResponse['data']> {
     try {
       const response = await apiService.verifyAvailableCars(codigoAgencia, data);
-      return response.dados;
+      return response.data;
     } catch (error) {
       console.error('Error verifying available cars:', error);
       throw error;

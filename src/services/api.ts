@@ -220,7 +220,7 @@ export interface VehicleData {
   returnFeePrice: number;
   returnFeeQuantity: number;
   totalDepositValue: number;
-  offer: string;
+  offer: string | null;
   availabilityToken: string;
   totalDeductibleValue: number;
   isUnlimitedKm: boolean;
@@ -238,7 +238,7 @@ export interface OptionalAddonData {
   fee: {
     percentage: number;
     totalValue: number;
-  };
+  } | null;
   maximumQuantity: number;
   maximumChargeableDays: number;
 }
@@ -255,7 +255,7 @@ export interface CoverageData {
 }
 
 export interface Coupon {
-  coupon: string;
+  coupon: string | null;
   valid: boolean;
 }
 
@@ -266,7 +266,7 @@ export interface RentalSearch {
   returnStoreCode: string;
   pickupDateTime: string;
   returnDateTime: string;
-  distanceToMainStore: number;
+  distanceToMainStore: number | null;
 }
 
 export interface AvailableVehicle {
@@ -979,20 +979,8 @@ class ApiService {
       );
     }
 
-    // Transformar resposta da nova API para formato legado
-    const availableCars: AvailableCarsResponse = {
-      dados: {
-        veiculosDisponiveis: [],
-        // Só adicionar filtroCupom se cupom foi enviado na requisição
-        filtroCupom: hasCouponInRequest
-          ? {
-              valido: couponValid ?? false,
-            }
-          : undefined,
-      },
-    };
-
-    // Adicionar filtro de valor se disponível
+    // Return data directly from API in English format
+    const availableVehicles: AvailableVehicle[] = [];
     let minValue = Infinity;
     let maxValue = -Infinity;
 
@@ -1002,82 +990,27 @@ class ApiService {
         if (vehicleValue < minValue) minValue = vehicleValue;
         if (vehicleValue > maxValue) maxValue = vehicleValue;
 
-        availableCars.dados.veiculosDisponiveis.push({
-          dadosVeiculo: {
-            modelo: vehicle.vehicleData.model,
-            categoria: vehicle.vehicleData.category,
-            grupoVeiculo: vehicle.vehicleData.vehicleGroup,
-            codigoAcriss: vehicle.vehicleData.vehicleGroupAcronym,
-            rateQualifier: vehicle.vehicleData.rateQualifier,
-            codigoVeiculo: vehicle.vehicleData.vehicleCode,
-            numeroPortas: vehicle.vehicleData.numberOfDoors,
-            numeroAssentos: vehicle.vehicleData.numberOfSeats,
-            lugares: vehicle.vehicleData.numberOfSeats,
-            capacidadeMala: vehicle.vehicleData.luggageCapacity,
-            capacidadeBagagem: vehicle.vehicleData.luggageCapacity,
-            arCondicionado: vehicle.vehicleData.hasAirConditioning,
-            temArCondicionado: vehicle.vehicleData.hasAirConditioning,
-            cambioAutomatico: vehicle.vehicleData.isAutomaticTransmission,
-            isAutomatico: vehicle.vehicleData.isAutomaticTransmission,
-            urlImagem: vehicle.vehicleData.imageUrl,
-            imagemUrl: vehicle.vehicleData.imageUrl,
-            nomeAgencia: availability.rentalCompanyName,
-            codigoAgencia: availability.rentalCompanyId,
-            valorTotal: vehicle.vehicleData.totalValue,
-            valorDiaria: vehicle.vehicleData.dailyValue,
-            valorPorDia: vehicle.vehicleData.dailyValue,
-            quantidadeDiarias: vehicle.vehicleData.numberOfDays,
-            numeroDias: vehicle.vehicleData.numberOfDays,
-            valorTotalCalcao: vehicle.vehicleData.totalDepositValue,
-            valorTotalFranquia: vehicle.vehicleData.totalDeductibleValue,
-            tokenCotacao: vehicle.vehicleData.availabilityToken,
-            ehMensal: vehicle.vehicleData.isMonthly,
-            isMensal: vehicle.vehicleData.isMonthly,
-            valorDiariaTotalMensal: vehicle.vehicleData.totalMonthlyDailyRateValue,
-            status: 'Available',
-          },
-          opcionais: vehicle.optionalAddonsData,
-          dadosOpcionais: vehicle.optionalAddonsData?.map((addon) => ({
-            nome: addon.name,
-            descricao: addon.description,
-            codigo: addon.addonCode,
-            valorDiaria: addon.dailyValue,
-            valorTotal: addon.totalValue,
-            quantidadeMaxima: addon.maximumQuantity,
-            quantidadeMaximaDiariasSerCobrado: addon.maximumChargeableDays,
-          } as { nome: string; descricao: string; codigo: string; valorDiaria: number; valorTotal: number; quantidadeMaxima: number; quantidadeMaximaDiariasSerCobrado: number; [key: string]: unknown })) || [],
-          protecoes: vehicle.coveragesData,
-          dadosProtecoes: vehicle.coveragesData?.map((coverage) => ({
-            codigoProtecao: coverage.coverageCode,
-            nome: coverage.name,
-            descricao: coverage.description,
-            obrigatorio: coverage.isRequired,
-            valorTotal: coverage.totalValue,
-            valorDiaria: coverage.dailyValue,
-            ordenacao: coverage.sortOrder,
-            sigla: coverage.acronym,
-          } as { codigoProtecao: string; nome: string; descricao: string; obrigatorio: boolean; valorTotal: number; valorDiaria: number; ordenacao: number; sigla: string; [key: string]: unknown })) || [],
-          pesquisaLocacao: {
-            localRetiradaNome: vehicle.rentalSearch.pickupStoreName,
-            localDevolucaoNome: vehicle.rentalSearch.returnStoreName,
-            localRetiradaSigla: vehicle.rentalSearch.pickupStoreCode,
-            localDevolucaoSigla: vehicle.rentalSearch.returnStoreCode,
-            dataHoraRetirada: vehicle.rentalSearch.pickupDateTime,
-            dataHoraDevolucao: vehicle.rentalSearch.returnDateTime,
-          },
-          rentalCompanyId: availability.rentalCompanyId,
-          rentalCompanyName: availability.rentalCompanyName,
-        });
+        availableVehicles.push(vehicle);
       });
     });
 
-    // Adicionar filtro de valor se houver veículos
-    if (availableCars.dados.veiculosDisponiveis.length > 0 && minValue !== Infinity && maxValue !== -Infinity) {
-      availableCars.dados.filtroValorReserva = {
-        minValorDisponibilidade: minValue,
-        maxValorDisponibilidade: maxValue,
-      };
-    }
+    const availableCars: AvailableCarsResponse = {
+      data: {
+        availableVehicles,
+        couponFilter: hasCouponInRequest
+          ? {
+              valid: couponValid ?? false,
+            }
+          : undefined,
+        priceRangeFilter:
+          availableVehicles.length > 0 && minValue !== Infinity && maxValue !== -Infinity
+            ? {
+                minAvailabilityValue: minValue,
+                maxAvailabilityValue: maxValue,
+              }
+            : undefined,
+      },
+    };
 
     return availableCars;
   }
@@ -1403,7 +1336,23 @@ export interface VerifyAvailableCarsRequest {
   locadoras?: string[];
 }
 
+// New English-based response type
 export interface AvailableCarsResponse {
+  data: {
+    couponFilter?: {
+      valid: boolean;
+    };
+    availableVehicles: AvailableVehicle[];
+    priceRangeFilter?: {
+      minAvailabilityValue: number;
+      maxAvailabilityValue: number;
+    };
+    [key: string]: unknown;
+  };
+}
+
+// Legacy Portuguese type (deprecated, kept for backward compatibility)
+export interface AvailableCarsResponseLegacy {
   dados: {
     filtroCupom?: {
       valido: boolean;

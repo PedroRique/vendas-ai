@@ -26,7 +26,7 @@ const CarDetailsModal: React.FC<CarDetailsModalProps> = ({
 
   const header = (
     <div className="modal-header">
-      <h2>Períodos - {car.dadosVeiculo.modelo}</h2>
+      <h2>Períodos - {car.vehicleData.model}</h2>
     </div>
   );
 
@@ -44,9 +44,9 @@ const CarDetailsModal: React.FC<CarDetailsModalProps> = ({
       maximizable
       blockScroll
     >
-      {car.disponibilidadeFranquia?.periodos && (
+      {(car as any).disponibilidadeFranquia?.periodos && (
         <TabView>
-          {car.disponibilidadeFranquia.periodos.map((periodo, index) => (
+          {(car as any).disponibilidadeFranquia.periodos.map((periodo: any, index: number) => (
             <TabPanel
               key={index}
               header={formatPeriodo(periodo.periodo)}
@@ -91,7 +91,7 @@ const CarDetailsModal: React.FC<CarDetailsModalProps> = ({
         </TabView>
       )}
 
-      {!car.disponibilidadeFranquia?.periodos && (
+      {!(car as any).disponibilidadeFranquia?.periodos && (
         <div className="no-periods">
           <p>Informações de períodos não disponíveis para este veículo.</p>
         </div>

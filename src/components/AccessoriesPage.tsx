@@ -38,19 +38,23 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
   );
 
   const accessories = useMemo(() => {
-    const dadosOpcionais = selectedCar.dadosOpcionais || [];
+    const optionalAddons = selectedCar.optionalAddonsData || [];
     // Inicializar quantidade para acessórios já selecionados
-    return dadosOpcionais.map((acc) => {
+    return optionalAddons.map((addon) => {
       const existing = selectedAccessories.find(
-        (sel) => sel.nome === acc.nome
+        (sel) => sel.nome === addon.name
       );
       return {
-        ...acc,
+        nome: addon.name,
+        valorDiaria: addon.dailyValue,
+        valorTotal: addon.totalValue,
+        quantidadeMaxima: addon.maximumQuantity,
+        quantidadeMaximaDiariasSerCobrado: addon.maximumChargeableDays,
         selected: !!existing,
-        quantidade: existing?.quantidade || acc.quantidade || 0,
+        quantidade: existing?.quantidade || 0,
       };
     });
-  }, [selectedCar.dadosOpcionais, selectedAccessories]);
+  }, [selectedCar.optionalAddonsData, selectedAccessories]);
 
   const handleAccessoryChange = (accessory: Accessory, quantity: number) => {
     // Calcular valor total baseado na quantidade e valor diária

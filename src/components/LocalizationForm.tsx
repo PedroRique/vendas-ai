@@ -320,7 +320,7 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
       );
 
       // Check coupon validity - só validar se cupom foi enviado e está inválido
-      if (coupon && response.filtroCupom && !response.filtroCupom.valido) {
+      if (coupon && response.couponFilter && !response.couponFilter.valid) {
         setCouponError('Cupom inválido');
         toast.current?.show({
           severity: 'error',
@@ -332,12 +332,12 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
       }
       
       // Limpar erro de cupom se cupom foi removido ou é válido
-      if (!coupon || (response.filtroCupom && response.filtroCupom.valido)) {
+      if (!coupon || (response.couponFilter && response.couponFilter.valid)) {
         setCouponError('');
       }
 
       // Check if cars are available
-      if (!response.veiculosDisponiveis || response.veiculosDisponiveis.length === 0) {
+      if (!response.availableVehicles || response.availableVehicles.length === 0) {
         toast.current?.show({
           severity: 'warn',
           summary: 'Aviso',

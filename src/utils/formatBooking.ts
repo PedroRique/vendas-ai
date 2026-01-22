@@ -4,18 +4,18 @@ import { cleanPhone } from './phoneMask';
 
 interface FormatBookingData {
   selectedCar: {
-    pesquisaLocacao: {
-      dataHoraDevolucao: string;
-      dataHoraRetirada: string;
-      localRetiradaSigla: string;
-      localDevolucaoSigla: string;
+    rentalSearch: {
+      returnDateTime: string;
+      pickupDateTime: string;
+      pickupStoreCode: string;
+      returnStoreCode: string;
     };
-    dadosVeiculo: {
-      ehMensal?: boolean;
-      codigoAcriss?: string;
-      grupoVeiculo?: string;
+    vehicleData: {
+      isMonthly?: boolean;
+      vehicleGroupAcronym?: string;
+      vehicleGroup?: string;
       rateQualifier?: string;
-      tokenCotacao?: string;
+      availabilityToken?: string;
       [key: string]: unknown;
     };
     [key: string]: unknown;
@@ -71,11 +71,11 @@ export function formatBooking(data: FormatBookingData, isQuotation: boolean = fa
   const celular = telClean.length >= 2 ? telClean.substring(2) : telClean;
 
   const booking: BookingRequest | QuotationRequest = {
-    dataHoraDevolucao: data.selectedCar.pesquisaLocacao.dataHoraDevolucao,
-    dataHoraRetirada: data.selectedCar.pesquisaLocacao.dataHoraRetirada,
-    localRetirada: data.selectedCar.pesquisaLocacao.localRetiradaSigla,
-    localDevolucao: data.selectedCar.pesquisaLocacao.localDevolucaoSigla,
-    ehMensal: data.selectedCar.dadosVeiculo.ehMensal,
+    dataHoraDevolucao: data.selectedCar.rentalSearch.returnDateTime,
+    dataHoraRetirada: data.selectedCar.rentalSearch.pickupDateTime,
+    localRetirada: data.selectedCar.rentalSearch.pickupStoreCode,
+    localDevolucao: data.selectedCar.rentalSearch.returnStoreCode,
+    ehMensal: data.selectedCar.vehicleData.isMonthly,
     dadosCliente: {
       email: data.personal.email,
       prefixoNome: data.personal.name.substring(0, 1),
@@ -88,14 +88,14 @@ export function formatBooking(data: FormatBookingData, isQuotation: boolean = fa
       tipoDocumento: data.personal.documentType,
       documento: documento,
     },
-    codigoAcriss: data.selectedCar.dadosVeiculo.codigoAcriss,
-    categoria: data.selectedCar.dadosVeiculo.grupoVeiculo,
+    codigoAcriss: data.selectedCar.vehicleData.vehicleGroupAcronym,
+    categoria: data.selectedCar.vehicleData.vehicleGroup,
     opcionais: data.accessories || [],
     protecoes: data.protection || [],
     codigoPromocional: data.localization.codCupom,
     tarifas: data.localization.tarifas || [],
-    rateQualifier: data.selectedCar.dadosVeiculo.rateQualifier,
-    tokenCotacao: data.selectedCar.dadosVeiculo.tokenCotacao,
+    rateQualifier: data.selectedCar.vehicleData.rateQualifier,
+    tokenCotacao: data.selectedCar.vehicleData.availabilityToken,
     protocolo: data.id_attendance,
   };
 

@@ -13,10 +13,10 @@ import CarList from "./CarList";
 
 interface AvailableCarsPageProps {
   availabilityData: {
-    veiculosDisponiveis: Car[];
-    filtroValorReserva?: {
-      minValorDisponibilidade: number;
-      maxValorDisponibilidade: number;
+    availableVehicles: Car[];
+    priceRangeFilter?: {
+      minAvailabilityValue: number;
+      maxAvailabilityValue: number;
     };
     [key: string]: unknown;
   };
@@ -41,7 +41,7 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
   const [carForDetails, setCarForDetails] = useState<Car | null>(null);
 
   const cars = useMemo(() => {
-    return availabilityData.veiculosDisponiveis || [];
+    return availabilityData.availableVehicles || [];
   }, [availabilityData]);
 
   const {
@@ -107,10 +107,10 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
 
   // Calcular range de preços inicial
   const initialPriceRange = useMemo(() => {
-    if (availabilityData.filtroValorReserva) {
+    if (availabilityData.priceRangeFilter) {
       return {
-        min: availabilityData.filtroValorReserva.minValorDisponibilidade,
-        max: availabilityData.filtroValorReserva.maxValorDisponibilidade,
+        min: availabilityData.priceRangeFilter.minAvailabilityValue,
+        max: availabilityData.priceRangeFilter.maxAvailabilityValue,
       };
     }
 
@@ -118,12 +118,12 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
       return { min: 0, max: 0 };
     }
 
-    const prices = filteredCars.map((car) => car.dadosVeiculo.valorTotal);
+    const prices = filteredCars.map((car) => car.vehicleData.totalValue);
     return {
       min: Math.min(...prices),
       max: Math.max(...prices),
     };
-  }, [availabilityData.filtroValorReserva, filteredCars]);
+  }, [availabilityData.priceRangeFilter, filteredCars]);
 
   // useEffect(() => {
   //   setPriceRange(initialPriceRange);
@@ -140,7 +140,7 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
       toast.current?.show({
         severity: "success",
         summary: "Veículo Selecionado",
-        detail: `${car.dadosVeiculo.modelo} selecionado com sucesso.`,
+        detail: `${car.vehicleData.model} selecionado com sucesso.`,
       });
     }
   };

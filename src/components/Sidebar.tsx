@@ -40,9 +40,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [valorHoraExtra, setValorHoraExtra] = useState(0);
   const [valorTaxaDevolucao, setValorTaxaDevolucao] = useState(0);
 
-  const car = selectedCar.dadosVeiculo;
-  const pesquisaLocacao = selectedCar.pesquisaLocacao;
-  const dailys = car.quantidadeDiarias || 0;
+  const car = selectedCar.vehicleData;
+  const rentalSearch = selectedCar.rentalSearch;
+  const dailys = car.numberOfDays || 0;
 
   // Formatar data e hora
   const formatDateTime = (dateTime?: string) => {
@@ -79,14 +79,14 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Calcular taxa administrativa
   const calcAdminTax = useMemo(() => {
-    const valorDiaria = (car as any).valorDiariaTotalMensal || car.valorTotal || 0;
+    const valorDiaria = car.totalMonthlyDailyRateValue || car.totalValue || 0;
     const valorProtecao = protections.reduce((sum, p) => sum + (p.valorTotal || 0), 0);
     const valorOpcionais = accessories.reduce((sum, a) => sum + ((a.valorTotal || 0) * (a.quantidade || 0)), 0);
     const valorHoraExtraCalc = valorHoraExtra;
     const valorTaxaDevolucaoCalc = valorTaxaDevolucao;
 
     const baseValue = valorDiaria + valorOpcionais + valorProtecao + valorTaxaDevolucaoCalc + valorHoraExtraCalc;
-    const percentualTaxaEventual = (car as any).percentualTaxaEventual || 0;
+    const percentualTaxaEventual = car.administrativeFeePercentage || 0;
     const totalPorcento = (baseValue * percentualTaxaEventual) / 100;
 
     return totalPorcento;
@@ -95,10 +95,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Calcular valor das horas extras
   const calcValorHoraExtra = useMemo(() => {
     const valorProtecao = protections.reduce((sum, p) => sum + (p.valorTotal || 0), 0);
-    const quantidadeDiarias = car.quantidadeDiarias || 0;
-    const quantidadeHoraExtra = (car as any).quantidadeHoraExtra || 0;
-    const valorTotalHoraExtra = (car as any).valorTotalHoraExtra || 0;
-    const percentualTaxaHoraExtraProtecao = (car as any).percentualTaxaHoraExtraProtecao || 0;
+    const quantidadeDiarias = car.numberOfDays || 0;
+    const quantidadeHoraExtra = car.numberOfOvertimeHours || 0;
+    const valorTotalHoraExtra = car.totalOvertimeValue || 0;
+    const percentualTaxaHoraExtraProtecao = car.overtimeCoverageFeePercentage || 0;
 
     if (quantidadeDiarias > 0 && quantidadeHoraExtra > 0) {
       const valorHoraExtraCalc = quantidadeHoraExtra * (
@@ -113,10 +113,10 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Calcular valor total
   useEffect(() => {
-    const valorDiaria = (car as any).valorDiariaTotalMensal || car.valorTotal || 0;
+    const valorDiaria = car.totalMonthlyDailyRateValue || car.totalValue || 0;
     const valorProtecao = protections.reduce((sum, p) => sum + (p.valorTotal || 0), 0);
     const valorOpcionais = accessories.reduce((sum, a) => sum + ((a.valorTotal || 0) * (a.quantidade || 0)), 0);
-    const valorTaxaDevolucaoCalc = (car as any).valorTaxaRetorno || valorTaxaDevolucao || 0;
+    const valorTaxaDevolucaoCalc = car.returnFeeValue || valorTaxaDevolucao || 0;
     const valorHoraExtraCalc = calcValorHoraExtra;
 
     const baseValue = valorDiaria + valorOpcionais + valorProtecao + valorTaxaDevolucaoCalc + valorHoraExtraCalc;
@@ -127,7 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     setAdminTax(adminTaxCalc);
     setValorHoraExtra(valorHoraExtraCalc);
     setValorTaxaDevolucao(valorTaxaDevolucaoCalc);
-  }, [car, accessories, protections, calcAdminTax, calcValorHoraExtra]);
+  }, [car, accessories, protections, calcAdminTax, calcValorHoraExtra, valorTaxaDevolucao]);
 
   // Copiar dados da sidebar
   const handleCopyData = () => {
@@ -161,10 +161,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const valorDiariaPorUnidade = dailys > 0 ? ((car as any).valorDiariaTotalMensal || car.valorTotal || 0) / dailys : 0;
-  const quantidadeHoraExtra = (car as any).quantidadeHoraExtra || 0;
+  const valorDiariaPorUnidade = dailys > 0 ? (car.totalMonthlyDailyRateValue || car.totalValue || 0) / dailys : 0;
+  const quantidadeHoraExtra = car.numberOfOvertimeHours || 0;
   const valorHoraExtraPorUnidade = quantidadeHoraExtra > 0 ? valorHoraExtra / quantidadeHoraExtra : 0;
-  const percentualTaxaEventual = (car as any).percentualTaxaEventual || 0;
+  const percentualTaxaEventual = car.administrativeFeePercentage || 0;
 
   return (
     <aside className={`sidebar ${quotation ? '-quotation' : ''}`}>
@@ -180,10 +180,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="info-car-box">
           <div className="car-info">
             <div className="media-box">
-              {car.urlImagem && (
+              {car.imageUrl && (
                 <img 
-                  src={car.urlImagem} 
-                  alt={car.modelo || 'Carro'} 
+                  src={car.imageUrl} 
+                  alt={car.model || 'Carro'} 
                 />
               )}
             </div>
@@ -199,12 +199,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         <p className="label">
           Descrição: <br />
-          <span className="value">{car.grupoVeiculo || '--'}</span>
+          <span className="value">{car.vehicleGroup || '--'}</span>
         </p>
 
         <p className="label">
           Modelo: <br />
-          <span className="value">{car.modelo || '--'}</span>
+          <span className="value">{car.model || '--'}</span>
         </p>
 
         {localizationData?.franquiaKM?.codigo && (
@@ -221,10 +221,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           </p>
         )}
 
-        {pesquisaLocacao?.localRetiradaNome && (
+        {rentalSearch?.pickupStoreName && (
           <p className="label">
             Local Retirada: <br />
-            <span className="value">{pesquisaLocacao.localRetiradaNome}</span>
+            <span className="value">{rentalSearch.pickupStoreName}</span>
           </p>
         )}
 
@@ -235,10 +235,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           </p>
         )}
 
-        {pesquisaLocacao?.localDevolucaoNome && (
+        {rentalSearch?.returnStoreName && (
           <p className="label">
             Local Devolução: <br />
-            <span className="value">{pesquisaLocacao.localDevolucaoNome}</span>
+            <span className="value">{rentalSearch.returnStoreName}</span>
           </p>
         )}
 
@@ -252,7 +252,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <p className="label">
           Diárias: <br />
           <span className="value">{dailys}x {formatCurrency(valorDiariaPorUnidade)}</span>
-          <span className="price">{formatCurrency((car as any).valorDiariaTotalMensal || car.valorTotal || 0)}</span>
+          <span className="price">{formatCurrency(car.totalMonthlyDailyRateValue || car.totalValue || 0)}</span>
         </p>
 
         <div className="list-box">
@@ -306,7 +306,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <p className="label">
           Taxa de Devolução: <br />
           <span className="value">(Taxa)</span>
-          <span className="price">{formatCurrency((car as any).valorTaxaRetorno || valorTaxaDevolucao)}</span>
+          <span className="price">{formatCurrency(car.returnFeeValue || valorTaxaDevolucao)}</span>
         </p>
 
         {percentualTaxaEventual > 0 && (
@@ -319,12 +319,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         <p className="label">
           Valor Caução: <br />
-          <span className="value">{formatCurrency(car.valorTotalCalcao || 0)}</span>
+          <span className="value">{formatCurrency(car.totalDepositValue || 0)}</span>
         </p>
 
         <p className="label">
           Valor da Franquia: <br />
-          <span className="value">{formatCurrency(car.valorTotalFranquia || 0)}</span>
+          <span className="value">{formatCurrency(car.totalDeductibleValue || 0)}</span>
         </p>
       </div>
 
@@ -334,7 +334,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <p className="value">{formatCurrency(totalValue)}</p>
         </div>
         <p className="payment-card">
-          {car.ehMensal 
+          {car.isMonthly 
             ? 'em até 3x sem juros'
             : 'em até 3x sem acréscimos ou de 4x a 12x, com pequenos acréscimos'}
         </p>

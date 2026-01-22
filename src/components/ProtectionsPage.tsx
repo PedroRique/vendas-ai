@@ -43,21 +43,41 @@ const ProtectionsPage: React.FC<ProtectionsPageProps> = ({
   
   // Separar proteções principais e adicionais
   const { mainProtections, additionalProtections } = useMemo(() => {
-    const allProtections = selectedCar.dadosProtecoes || [];
+    const allCoverages = selectedCar.coveragesData || [];
     
-    const main = allProtections
-      .filter((p) => !additionalProtectionsCodes.includes(p.codigoProtecao))
-      .sort((a, b) => (a.ordenacao || 0) - (b.ordenacao || 0));
+    const main = allCoverages
+      .filter((p) => !additionalProtectionsCodes.includes(p.coverageCode))
+      .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+      .map((coverage) => ({
+        codigoProtecao: coverage.coverageCode,
+        nome: coverage.name,
+        descricao: coverage.description,
+        obrigatorio: coverage.isRequired,
+        valorTotal: coverage.totalValue,
+        valorDiaria: coverage.dailyValue,
+        ordenacao: coverage.sortOrder,
+        sigla: coverage.acronym,
+      }));
     
-    const additional = allProtections
-      .filter((p) => additionalProtectionsCodes.includes(p.codigoProtecao))
-      .sort((a, b) => (a.ordenacao || 0) - (b.ordenacao || 0));
+    const additional = allCoverages
+      .filter((p) => additionalProtectionsCodes.includes(p.coverageCode))
+      .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+      .map((coverage) => ({
+        codigoProtecao: coverage.coverageCode,
+        nome: coverage.name,
+        descricao: coverage.description,
+        obrigatorio: coverage.isRequired,
+        valorTotal: coverage.totalValue,
+        valorDiaria: coverage.dailyValue,
+        ordenacao: coverage.sortOrder,
+        sigla: coverage.acronym,
+      }));
     
     return {
       mainProtections: main,
       additionalProtections: additional,
     };
-  }, [selectedCar.dadosProtecoes]);
+  }, [selectedCar.coveragesData]);
 
   // Estado inicial: seleciona proteção obrigatória ou primeira da lista
   const initialProtection = useMemo(() => {

@@ -31,7 +31,7 @@ const CarCard: React.FC<CarCardProps> = ({
     }).format(value);
   };
 
-  const dailyPrice = car.dadosVeiculo.valorTotal / car.dadosVeiculo.quantidadeDiarias;
+  const dailyPrice = car.vehicleData.totalValue / car.vehicleData.numberOfDays;
 
   const handleCopy = () => {
     onCopy(car);
@@ -45,16 +45,16 @@ const CarCard: React.FC<CarCardProps> = ({
 
   const header = (
     <div className="car-card-header">
-      <div className={`car-logo ${car.dadosVeiculo.nomeAgencia?.toLowerCase()}`}>
-        <span>{car.dadosVeiculo.nomeAgencia}</span>
+      <div className={`car-logo ${car.rentalCompanyName?.toLowerCase()}`}>
+        <span>{car.rentalCompanyName}</span>
       </div>
       <div className="car-info-header">
         <h2 className="car-model">
-          {car.dadosVeiculo.modelo}
+          {car.vehicleData.model}
           <Tooltip target=".info-tooltip" />
           <i className="pi pi-info-circle info-tooltip" data-pr-tooltip="O modelo é apenas uma referência para o grupo, a locadora poderá entregar outro modelo com características semelhantes." />
         </h2>
-        <p className="car-category">{car.dadosVeiculo.grupoVeiculo}</p>
+        <p className="car-category">{car.vehicleData.vehicleGroup}</p>
       </div>
       <Button
         icon="pi pi-copy"
@@ -73,8 +73,8 @@ const CarCard: React.FC<CarCardProps> = ({
       <div className="car-card-content">
         <div className="car-image-section">
           <img
-            src={car.dadosVeiculo.urlImagem || '/placeholder-car.png'}
-            alt={car.dadosVeiculo.modelo}
+            src={car.vehicleData.imageUrl || '/placeholder-car.png'}
+            alt={car.vehicleData.model}
             className="car-image"
             onError={(e) => {
               (e.target as HTMLImageElement).src = '/placeholder-car.png';
@@ -89,35 +89,35 @@ const CarCard: React.FC<CarCardProps> = ({
                 <p>
                   <strong>Local de retirada:</strong>
                   <br />
-                  {car.pesquisaLocacao.localRetiradaNome}
+                  {car.rentalSearch.pickupStoreName}
                 </p>
               </div>
               <div className="detail-row">
                 <p>
                   <strong>Local devolução:</strong>
                   <br />
-                  {car.pesquisaLocacao.localDevolucaoNome}
+                  {car.rentalSearch.returnStoreName}
                 </p>
               </div>
               <div className="detail-row">
                 <p>
                   <strong>Valores:</strong>
                   <br />
-                  <strong>Caução:</strong> {formatCurrency(car.dadosVeiculo.valorTotalCalcao)} •{' '}
-                  <strong>Franquia:</strong> {formatCurrency(car.dadosVeiculo.valorTotalFranquia)}
+                  <strong>Caução:</strong> {formatCurrency(car.vehicleData.totalDepositValue)} •{' '}
+                  <strong>Franquia:</strong> {formatCurrency(car.vehicleData.totalDeductibleValue)}
                 </p>
               </div>
-              {car.dadosVeiculo.ehMensal && car.disponibilidadeFranquia && (
+              {car.vehicleData.isMonthly && (car as any).disponibilidadeFranquia && (
                 <div className="detail-row">
                   <p>
                     <strong>Diárias:</strong>
                     <br />
-                    {car.dadosVeiculo.quantidadeDiarias}
+                    {car.vehicleData.numberOfDays}
                   </p>
                   <p>
                     <strong>Período de:</strong>
                     <br />
-                    {car.disponibilidadeFranquia.periodos.length} Meses
+                    {(car as any).disponibilidadeFranquia.periodos.length} Meses
                   </p>
                   {onViewDetails && (
                     <Button
@@ -133,8 +133,8 @@ const CarCard: React.FC<CarCardProps> = ({
           )}
         </div>
 
-        <div className={`car-price-section ${car.dadosVeiculo.ehMensal ? 'monthly' : ''}`}>
-          <p className="price-total">{formatCurrency(car.dadosVeiculo.valorTotal)}</p>
+        <div className={`car-price-section ${car.vehicleData.isMonthly ? 'monthly' : ''}`}>
+          <p className="price-total">{formatCurrency(car.vehicleData.totalValue)}</p>
           <p className="price-daily">{formatCurrency(dailyPrice)}/dia</p>
           <span className="installment-info">ou até 10x no cartão</span>
           {isSelected ? (
@@ -159,13 +159,13 @@ const CarCard: React.FC<CarCardProps> = ({
           <i className="pi pi-car" />
           Tanque cheio
         </span>
-        {car.dadosVeiculo.capacidadeMala > 0 && (
+        {car.vehicleData.luggageCapacity > 0 && (
           <span>
             <i className="pi pi-briefcase" />
-            {car.dadosVeiculo.capacidadeMala} malas
+            {car.vehicleData.luggageCapacity} malas
           </span>
         )}
-        {car.dadosVeiculo.ehMensal && franchiseKm && (
+        {car.vehicleData.isMonthly && franchiseKm && (
           <span>
             <i className="pi pi-map-marker" />
             Franquia Mensal {franchiseKm} KM

@@ -51,16 +51,16 @@ const QuotationPage: React.FC<QuotationPageProps> = ({
   const handleSendEmail = async () => {
     setIsLoading(true);
     try {
-      // Construir pesquisaLocacao com os dados necessários
+      // Construir rentalSearch com os dados necessários
       const locData = localizationData.localization as any;
       const selectedCarWithLoc = {
         ...selectedCar,
-        pesquisaLocacao: {
-          ...selectedCar.pesquisaLocacao,
-          dataHoraDevolucao: locData.dataHoraDevolucao || '',
-          dataHoraRetirada: locData.dataHoraRetirada || '',
-          localRetiradaSigla: locData.locaisRetirada?.[0] || selectedCar.pesquisaLocacao.localRetiradaNome || '',
-          localDevolucaoSigla: locData.locaisDevolucao?.[0] || selectedCar.pesquisaLocacao.localDevolucaoNome || '',
+        rentalSearch: {
+          ...selectedCar.rentalSearch,
+          returnDateTime: locData.dataHoraDevolucao || '',
+          pickupDateTime: locData.dataHoraRetirada || '',
+          pickupStoreCode: locData.locaisRetirada?.[0] || selectedCar.rentalSearch.pickupStoreName || '',
+          returnStoreCode: locData.locaisDevolucao?.[0] || selectedCar.rentalSearch.returnStoreName || '',
         },
       };
 
