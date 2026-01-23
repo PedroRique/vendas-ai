@@ -62,6 +62,9 @@ const QuotationPage: React.FC<QuotationPageProps> = ({
           pickupStoreCode: locData.locaisRetirada?.[0] || selectedCar.rentalSearch.pickupStoreName || '',
           returnStoreCode: locData.locaisDevolucao?.[0] || selectedCar.rentalSearch.returnStoreName || '',
         },
+        vehicleData: {
+          ...selectedCar.vehicleData,
+        } as { [key: string]: unknown; isMonthly?: boolean; vehicleGroupAcronym?: string; vehicleGroup?: string; rateQualifier?: string; availabilityToken?: string },
       };
 
       const bookingData = formatBooking(

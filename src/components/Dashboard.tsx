@@ -246,6 +246,9 @@ const Dashboard: React.FC = () => {
               selectedCar.rentalSearch.returnStoreName ||
               "",
           },
+          vehicleData: {
+            ...selectedCar.vehicleData,
+          } as { [key: string]: unknown; isMonthly?: boolean; vehicleGroupAcronym?: string; vehicleGroup?: string; rateQualifier?: string; availabilityToken?: string },
         };
 
         const bookingData = formatBooking({
@@ -318,6 +321,9 @@ const Dashboard: React.FC = () => {
               selectedCar.rentalSearch.returnStoreName ||
               "",
           },
+          vehicleData: {
+            ...selectedCar.vehicleData,
+          } as { [key: string]: unknown; isMonthly?: boolean; vehicleGroupAcronym?: string; vehicleGroup?: string; rateQualifier?: string; availabilityToken?: string },
         };
 
         const bookingData = formatBooking({
