@@ -3,6 +3,7 @@ import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import React, { useState } from "react";
 import { apiService, type Booking } from "../services/api";
+import { tenant } from "../tenant";
 import "./BookingItem.scss";
 import CancelBookingModal from "./CancelBookingModal";
 import UpdateBookingModal from "./UpdateBookingModal";
@@ -28,6 +29,12 @@ const BookingItem: React.FC<BookingItemProps> = ({
     booking.statusReserva.nome === "Booked" ||
     booking.statusReserva.nome === "Confirmada";
   const bookingCode = booking.codigoReservaAgencia || booking.codigoReserva;
+  const bookingActions = tenant.features.booking;
+  const showFooterActions =
+    canEditOrCancel &&
+    (bookingActions.resendVoucher ||
+      bookingActions.update ||
+      bookingActions.cancel);
 
   const handleDownloadLogs = async () => {
     setIsDownloadingLogs(true);
@@ -143,42 +150,50 @@ const BookingItem: React.FC<BookingItemProps> = ({
               </p>
               <p className="payment-card">ou até 10x no cartão</p>
             </div>
-            <Button
-              label="Baixar Logs"
-              icon="pi pi-download"
-              onClick={handleDownloadLogs}
-              loading={isDownloadingLogs}
-              disabled={isDownloadingLogs}
-              className="btn-logs"
-              severity="secondary"
-              size="small"
-            />
+            {bookingActions.downloadLogs && (
+              <Button
+                label="Baixar Logs"
+                icon="pi pi-download"
+                onClick={handleDownloadLogs}
+                loading={isDownloadingLogs}
+                disabled={isDownloadingLogs}
+                className="btn-logs"
+                severity="secondary"
+                size="small"
+              />
+            )}
           </div>
         </div>
 
-        {canEditOrCancel && (
+        {showFooterActions && (
           <div className="booking-footer">
-            <Button
-              label="Enviar Voucher"
-              icon="pi pi-send"
-              onClick={handleResendVoucher}
-              loading={isResendingVoucher}
-              disabled={isResendingVoucher}
-              className="btn-voucher"
-            />
-            <Button
-              label="Alterar"
-              icon="pi pi-pencil"
-              onClick={() => setShowUpdateModal(true)}
-              className="btn-update"
-            />
-            <Button
-              label="Cancelar"
-              icon="pi pi-times"
-              onClick={() => setShowCancelModal(true)}
-              className="btn-cancel"
-              severity="danger"
-            />
+            {bookingActions.resendVoucher && (
+              <Button
+                label="Enviar Voucher"
+                icon="pi pi-send"
+                onClick={handleResendVoucher}
+                loading={isResendingVoucher}
+                disabled={isResendingVoucher}
+                className="btn-voucher"
+              />
+            )}
+            {bookingActions.update && (
+              <Button
+                label="Alterar"
+                icon="pi pi-pencil"
+                onClick={() => setShowUpdateModal(true)}
+                className="btn-update"
+              />
+            )}
+            {bookingActions.cancel && (
+              <Button
+                label="Cancelar"
+                icon="pi pi-times"
+                onClick={() => setShowCancelModal(true)}
+                className="btn-cancel"
+                severity="danger"
+              />
+            )}
           </div>
         )}
       </div>
@@ -194,16 +209,18 @@ const BookingItem: React.FC<BookingItemProps> = ({
         }}
       />
 
-      <UpdateBookingModal
-        visible={showUpdateModal}
-        onHide={() => setShowUpdateModal(false)}
-        booking={booking}
-        agencyCode={agencyCode}
-        onSuccess={() => {
-          setShowUpdateModal(false);
-          onRefresh();
-        }}
-      />
+      {bookingActions.update && (
+        <UpdateBookingModal
+          visible={showUpdateModal}
+          onHide={() => setShowUpdateModal(false)}
+          booking={booking}
+          agencyCode={agencyCode}
+          onSuccess={() => {
+            setShowUpdateModal(false);
+            onRefresh();
+          }}
+        />
+      )}
     </>
   );
 };

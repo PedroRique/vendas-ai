@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { localizationService, type Partner, type LocationPlace } from '../services/localization';
 import type { Agency } from '../services/api';
 import { useAuth } from './useAuth';
+import { tenant } from '../tenant';
 
 interface UseLocalizationReturn {
   // Locadoras
@@ -114,8 +115,12 @@ export const useLocalization = (agencyCode: number = 0): UseLocalizationReturn =
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
   const [locationError, setLocationError] = useState<Error | null>(null);
 
-  // Load locadoras on mount
+  // Load locadoras on mount (apenas multilocadora)
   useEffect(() => {
+    if (!tenant.features.multiRentalCompany) {
+      return;
+    }
+
     const loadLocadoras = async () => {
       setIsLoadingLocadoras(true);
       try {

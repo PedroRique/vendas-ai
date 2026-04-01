@@ -1,5 +1,7 @@
 import { API_BASE_URL } from '../config/environment';
+import { tenant } from '../tenant';
 import { authService } from './auth';
+import { getBookingTransport } from './bookingTransport';
 
 // ==================== TIPOS DE AUTENTICAÇÃO ====================
 
@@ -524,6 +526,7 @@ export interface ApiError {
 
 class ApiService {
   private baseURL: string;
+  private bookingTransport = getBookingTransport(tenant.id);
 
   constructor() {
     this.baseURL = API_BASE_URL;
@@ -825,8 +828,11 @@ class ApiService {
   }
 
   async getAvailableAgencies(): Promise<AvailableAgenciesResponse> {
-    // Na nova API, as locadoras são identificadas por rentalCompanyId
-    // Retornar lista básica com as 4 locadoras disponíveis
+    if (!tenant.features.multiRentalCompany) {
+      return Promise.resolve({
+        dados: [{ codigo: 4, nome: 'Foco', nomeAgencia: 'Foco' }],
+      });
+    }
     return Promise.resolve({
       dados: [
         { codigo: 1, nome: 'Movida', nomeAgencia: 'Movida' },
@@ -842,7 +848,7 @@ class ApiService {
   ): Promise<LocationsResponse & { errors?: ApiError[] | null }> {
     // Adaptar para usar searchStores da nova API
     const searchStoresData: SearchStoresRequest = {
-      rentalCompaniesIds: [1, 2, 3, 4], // Todas as locadoras
+      rentalCompaniesIds: [...tenant.features.rentalCompanyIdsForSearch],
       search: data.filtro || '',
       neighborhood: '',
       city: '',
@@ -947,7 +953,7 @@ class ApiService {
           };
           return rentalCompanyMap[loc.toLowerCase()] || 1;
         })
-      : [1, 2, 3, 4]; // Todas as locadoras se não especificado
+      : [...tenant.features.rentalCompanyIdsForSearch];
 
     const availabilityRequests: AvailabilityRequest[] = rentalCompanyIds.map(
       (rentalCompanyId) => ({
@@ -1018,37 +1024,29 @@ class ApiService {
   // ==================== MÉTODOS DE RESERVA ====================
 
   async createBooking(data: BookingRequest): Promise<BookingResponse> {
-    return this.request<BookingResponse>('booking', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return this.bookingTransport.createBooking(this.request.bind(this), data);
   }
 
   async getBookingDetails(
     data: GetBookingDetailsRequest
   ): Promise<BookingDetailsResponse> {
-    return this.request<BookingDetailsResponse>('booking/getDetails', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return this.bookingTransport.getBookingDetails(
+      this.request.bind(this),
+      data.rentalCompanyId,
+      data.bookingCode
+    );
   }
 
   async updateBooking(
     data: UpdateBookingRequest
   ): Promise<UpdateBookingResponse> {
-    return this.request<UpdateBookingResponse>('booking/update', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
+    return this.bookingTransport.updateBooking(this.request.bind(this), data);
   }
 
   async cancelBooking(
     data: CancelBookingRequest
   ): Promise<CancelBookingResponse> {
-    return this.request<CancelBookingResponse>('booking/cancel', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return this.bookingTransport.cancelBooking(this.request.bind(this), data);
   }
 
   // ==================== MÉTODOS DE COMPATIBILIDADE PARA RESERVAS ====================
@@ -1211,7 +1209,10 @@ class ApiService {
       rateQualifier: data.rateQualifier,
     };
 
-    const response = await this.createBooking(bookingRequest);
+    const response = await this.bookingTransport.createBooking(
+      this.request.bind(this),
+      bookingRequest
+    );
     return {
       ...response,
       dados: {
@@ -1232,12 +1233,15 @@ class ApiService {
   }
 
   async listBookings(
-    _idCarrental: number,
-    _document: string
+    idCarrental: number,
+    document: string
   ): Promise<{ dados: Booking[] }> {
-    // Na nova API não há endpoint de listagem de reservas por documento
-    // Retornar array vazio por enquanto
-    return Promise.resolve({ dados: [] });
+    const dados = await this.bookingTransport.listBookings(
+      this.request.bind(this),
+      idCarrental,
+      document
+    );
+    return { dados };
   }
 
   async findCustomer(_documento: string): Promise<{

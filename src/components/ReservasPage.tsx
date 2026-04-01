@@ -4,6 +4,7 @@ import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import { apiService, type Booking } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { tenant } from '../tenant';
 import BookingItem from './BookingItem';
 import './ReservasPage.scss';
 
@@ -24,7 +25,7 @@ const ReservasPage: React.FC = () => {
       toast.current?.show({
         severity: 'warn',
         summary: 'Aviso',
-        detail: 'Por favor, digite o CPF ou código da reserva.',
+        detail: tenant.copy.reservasSearchRequiredDetail,
       });
       return;
     }
@@ -85,14 +86,14 @@ const ReservasPage: React.FC = () => {
         <form className="reservas-search-form" onSubmit={handleSearch}>
           <div className="search-box">
             <label htmlFor="searchDoc" className="form-label">
-              Reserva ou CPF
+              {tenant.copy.reservasSearchLabel}
             </label>
             <div className="search-input-group">
               <InputText
                 id="searchDoc"
                 value={searchDoc}
                 onChange={(e) => setSearchDoc(e.target.value)}
-                placeholder="Digite o CPF ou código da reserva"
+                placeholder={tenant.copy.reservasSearchPlaceholder}
                 className="search-input"
                 disabled={isLoading}
               />

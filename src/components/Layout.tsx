@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from 'primereact/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import logoImage from '../assets/alugueldecarroai-preto.png';
+import { tenant } from '../tenant';
 import './Layout.scss';
 
 interface LayoutProps {
@@ -31,7 +31,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="layout-header">
           <div className="header-top">
             <div className="header-logo">
-              <img src={logoImage} alt="Aluguel de Carro AI" />
+              <img src={tenant.branding.logoSrc} alt={tenant.branding.logoAlt} />
             </div>
             <div className="header-actions">
               <Button
@@ -74,7 +74,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       ) : (
         <div className="layout-header-bar">
           <div className="header-logo">
-            <img src={logoImage} alt="Aluguel de Carro AI" />
+            <img src={tenant.branding.logoSrc} alt={tenant.branding.logoAlt} />
           </div>
           <div className="header-actions">
             <Button

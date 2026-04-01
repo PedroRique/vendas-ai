@@ -12,6 +12,7 @@ import { useReservation } from '../contexts/useReservation';
 import AutocompleteInput, { type AutocompleteCategory } from './AutocompleteInput';
 import DatePicker from './DatePicker';
 import TimePicker from './TimePicker';
+import { tenant } from '../tenant';
 import './LocalizationForm.scss';
 
 interface LocalizationFormProps {
@@ -20,6 +21,41 @@ interface LocalizationFormProps {
   agencyCode?: number;
   protocolo?: string | null;
 }
+
+interface LocadoraFilterSectionProps {
+  selectedLocadoras: string[];
+  setSelectedLocadoras: (v: string[]) => void;
+  locadorasOptions: { label: string; value: string }[];
+  isLoadingLocadoras: boolean;
+}
+
+const LocadoraFilterSection: React.FC<LocadoraFilterSectionProps> = ({
+  selectedLocadoras,
+  setSelectedLocadoras,
+  locadorasOptions,
+  isLoadingLocadoras,
+}) => (
+  <div className="box">
+    <label htmlFor="locadoras" className="form-label -locadoras">
+      Locadoras
+    </label>
+    <MultiSelect
+      id="locadoras"
+      value={selectedLocadoras}
+      options={locadorasOptions}
+      onChange={(e) => setSelectedLocadoras(e.value || [])}
+      placeholder="Selecione as locadoras (opcional)"
+      display="chip"
+      className="locadoras-multiselect"
+      loading={isLoadingLocadoras}
+      filter
+      showClear
+    />
+    <small className="form-help-text">
+      Se nenhuma locadora for selecionada, o sistema pesquisará em todas as locadoras disponíveis.
+    </small>
+  </div>
+);
 
 const LocalizationForm: React.FC<LocalizationFormProps> = ({
   onSuccess,
@@ -412,27 +448,14 @@ const LocalizationForm: React.FC<LocalizationFormProps> = ({
       <section className="localization">
         <h1 className="main-title">Destino / Locação</h1>
         <form className="localization-form" onSubmit={handleSubmit}>
-          {/* Locadoras Selection */}
-          <div className="box">
-            <label htmlFor="locadoras" className="form-label -locadoras">
-              Locadoras
-            </label>
-            <MultiSelect
-              id="locadoras"
-              value={selectedLocadoras}
-              options={locadorasOptions}
-              onChange={(e) => setSelectedLocadoras(e.value || [])}
-              placeholder="Selecione as locadoras (opcional)"
-              display="chip"
-              className="locadoras-multiselect"
-              loading={isLoadingLocadoras}
-              filter
-              showClear
+          {tenant.features.multiRentalCompany && (
+            <LocadoraFilterSection
+              selectedLocadoras={selectedLocadoras}
+              setSelectedLocadoras={setSelectedLocadoras}
+              locadorasOptions={locadorasOptions}
+              isLoadingLocadoras={isLoadingLocadoras}
             />
-            <small className="form-help-text">
-              Se nenhuma locadora for selecionada, o sistema pesquisará em todas as locadoras disponíveis.
-            </small>
-          </div>
+          )}
 
           {/* Get Car Location */}
           <div className="box">
