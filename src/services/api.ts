@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '../config/environment';
 import { tenant } from '../tenant';
 import { authService } from './auth';
+import { getAvailabilityTransport } from './availabilityTransport';
 import { getBookingTransport } from './bookingTransport';
 
 // ==================== TIPOS DE AUTENTICAÇÃO ====================
@@ -172,8 +173,25 @@ export interface RentalCompanyStores {
 }
 
 export interface SearchStoresResponse {
-  rentalCompanies: RentalCompanyStores[];
-  errors: ApiError[] | null;
+  rentalCompanies?: RentalCompanyStores[];
+  stores?: Store[];
+  airports?: {
+    name: string;
+    storeCount: number;
+    stores: string[];
+  }[];
+  cities?: {
+    name: string;
+    storeCount: number;
+    stores: string[];
+  }[];
+  neighborhoods?: {
+    name: string;
+    storeCount: number;
+    stores: string[];
+  }[];
+  error?: string;
+  errors?: ApiError[] | null;
 }
 
 // ==================== TIPOS DE DISPONIBILIDADE ====================
@@ -526,6 +544,7 @@ export interface ApiError {
 
 class ApiService {
   private baseURL: string;
+  private availabilityTransport = getAvailabilityTransport(tenant.id);
   private bookingTransport = getBookingTransport(tenant.id);
 
   constructor() {
@@ -811,10 +830,10 @@ class ApiService {
   async getAvailability(
     data: AvailabilityRequestPayload
   ): Promise<AvailabilityResponse> {
-    return this.request<AvailabilityResponse>('availability', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return this.availabilityTransport.getAvailability(
+      this.request.bind(this),
+      data
+    );
   }
 
   // ==================== MÉTODOS DE COMPATIBILIDADE (LEGADO) ====================
@@ -871,67 +890,77 @@ class ApiService {
 
     const response = await this.searchStores(searchStoresData);
 
-    // Transformar resposta da nova API para formato legado
+    const toLocationItem = (item: { name: string; storeCount: number; stores: string[] }) => ({
+      nome: item.name,
+      sigla: item.name,
+      lojas: item.stores,
+      qtLojas: item.storeCount,
+    });
+
     const locations: LocationsResponse & { errors?: ApiError[] | null } = {
       dados: {
-        Aeroportos: [],
-        TodasLojas: [],
-        Cidades: [],
-        Bairro: [],
-      },
-      errors: response.errors || null,
-    };
-
-    // Processar dados mesmo se houver erros (pode ter dados parciais)
-
-    response.rentalCompanies.forEach((company) => {
-      company.stores.forEach((store) => {
-        locations.dados.TodasLojas.push({
+        Aeroportos: (response.airports || []).map(toLocationItem),
+        TodasLojas: (response.stores || []).map((store) => ({
           nome: store.name,
           sigla: store.acronym,
           lojas: [store.acronym],
           qtLojas: 1,
-          rentalCompanyId: company.rentalCompanyId,
-          rentalCompanyName: company.rentalCompanyName,
+        })),
+        Cidades: (response.cities || []).map(toLocationItem),
+        Bairro: (response.neighborhoods || []).map(toLocationItem),
+      },
+      errors: response.errors || null,
+    };
+
+    // Fallback: formato antigo com rentalCompanies
+    if (!response.stores?.length && response.rentalCompanies?.length) {
+      response.rentalCompanies.forEach((company) => {
+        const { stores } = company;
+        stores.forEach((store) => {
+          locations.dados.TodasLojas.push({
+            nome: store.name,
+            sigla: store.acronym,
+            lojas: [store.acronym],
+            qtLojas: 1,
+            rentalCompanyId: company.rentalCompanyId,
+            rentalCompanyName: company.rentalCompanyName,
+          });
         });
 
-        if (store.city && !locations.dados.Cidades.find((c) => c.nome === store.city)) {
-          locations.dados.Cidades.push({
-            nome: store.city,
-            sigla: store.city,
-            lojas: company.stores
-              .filter((s) => s.city === store.city)
-              .map((s) => s.acronym),
-            qtLojas: company.stores.filter((s) => s.city === store.city).length,
-          });
-        }
+        const addUnique = <T extends { nome: string }>(
+          arr: T[],
+          item: T
+        ) => !arr.find((x) => x.nome === item.nome) && arr.push(item);
 
-        if (store.neighborhood && !locations.dados.Bairro.find((b) => b.nome === store.neighborhood)) {
-          locations.dados.Bairro.push({
-            nome: store.neighborhood,
-            sigla: store.neighborhood,
-            lojas: company.stores
-              .filter((s) => s.neighborhood === store.neighborhood)
-              .map((s) => s.acronym),
-            qtLojas: company.stores.filter((s) => s.neighborhood === store.neighborhood).length,
-          });
-        }
+        const uniqueCities = [...new Set(stores.map((s) => s.city).filter(Boolean))];
+        const uniqueNeighborhoods = [...new Set(stores.map((s) => s.neighborhood).filter(Boolean))];
+        const uniqueAirports = [...new Set(stores.filter((s) => s.airport).map((s) => s.airport!.name))];
 
-        if (store.airport) {
-          const airportName = store.airport.name;
-          if (!locations.dados.Aeroportos.find((a) => a.nome === airportName)) {
-            locations.dados.Aeroportos.push({
-              nome: airportName,
-              sigla: store.airport.iata,
-              lojas: company.stores
-                .filter((s) => s.airport?.name === airportName)
-                .map((s) => s.acronym),
-              qtLojas: company.stores.filter((s) => s.airport?.name === airportName).length,
-            });
-          }
-        }
+        uniqueCities.forEach((city) => addUnique(locations.dados.Cidades, {
+          nome: city,
+          sigla: city,
+          lojas: stores.filter((s) => s.city === city).map((s) => s.acronym),
+          qtLojas: stores.filter((s) => s.city === city).length,
+        }));
+
+        uniqueNeighborhoods.forEach((neighborhood) => addUnique(locations.dados.Bairro, {
+          nome: neighborhood,
+          sigla: neighborhood,
+          lojas: stores.filter((s) => s.neighborhood === neighborhood).map((s) => s.acronym),
+          qtLojas: stores.filter((s) => s.neighborhood === neighborhood).length,
+        }));
+
+        uniqueAirports.forEach((airportName) => {
+          const airportStore = stores.find((s) => s.airport?.name === airportName)!;
+          addUnique(locations.dados.Aeroportos, {
+            nome: airportName,
+            sigla: airportStore.airport!.iata,
+            lojas: stores.filter((s) => s.airport?.name === airportName).map((s) => s.acronym),
+            qtLojas: stores.filter((s) => s.airport?.name === airportName).length,
+          });
+        });
       });
-    });
+    }
 
     return locations;
   }
