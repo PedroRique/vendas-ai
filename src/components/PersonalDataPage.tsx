@@ -36,6 +36,7 @@ interface PersonalDataPageProps {
   onSuccess: (personalData: PersonalData, isNewCustomer: boolean) => void;
   onQuotation?: (personalData: PersonalData, isNewCustomer: boolean) => void;
   onAbort?: () => void;
+  isBookingLoading?: boolean;
 }
 
 const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
@@ -46,6 +47,7 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
   onSuccess,
   onQuotation,
   onAbort,
+  isBookingLoading = false,
 }) => {
   const toast = React.useRef<Toast>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -322,12 +324,6 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
       };
 
       onSuccess(finalPersonalData, isNewCustomer);
-      
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Dados pessoais salvos com sucesso.',
-      });
     } catch (error: unknown) {
       console.error('Erro ao salvar dados pessoais:', error);
       const errorMessage = error instanceof Error ? error.message : 'Não foi possível salvar os dados pessoais.';
@@ -431,7 +427,7 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
   };
 
   return (
-    <div className="personal-data-page sidebar-container">
+    <div className="personal-data-page">
       <Toast ref={toast} />
       <Card className="personal-data-card">
         <div className="personal-data-header">
@@ -616,8 +612,8 @@ const PersonalDataPage: React.FC<PersonalDataPageProps> = ({
               type="submit"
               label="Finalizar"
               icon="pi pi-check"
-              loading={isLoading}
-              disabled={!isFormValid() || isLoading || isSearchingCustomer}
+              loading={isBookingLoading}
+              disabled={!isFormValid() || isLoading || isSearchingCustomer || isBookingLoading}
             />
           </div>
         </form>

@@ -115,7 +115,7 @@ const QuotationPage: React.FC<QuotationPageProps> = ({
   };
 
   return (
-    <div className="quotation-page sidebar-container -with-quotation-sidebar">
+    <div className="quotation-page">
       <Toast ref={toast} />
       <Card className="quotation-card">
         <div className="quotation-header">

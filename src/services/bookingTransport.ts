@@ -10,6 +10,7 @@ import type {
   UpdateBookingRequest,
   UpdateBookingResponse,
 } from './api';
+import { toastService } from './toastService';
 
 export type ApiRequestFn = <T>(
   endpoint: string,
@@ -226,17 +227,17 @@ const focoBookingTransport: BookingTransport = {
       { method: 'GET' }
     );
     if (raw.error) {
-      throw new Error(
-        typeof raw.error === 'string' ? raw.error : 'Erro ao buscar reserva.'
-      );
+      const errorMessage = typeof raw.error === 'string' ? raw.error : 'Erro ao buscar reserva.';
+      toastService.apiError(errorMessage);
+      throw new Error(errorMessage);
     }
     return focoRawToDetails(raw);
   },
 
   updateBooking: () => {
-    return Promise.reject(
-      new Error('Edição de reserva não está disponível neste portal.')
-    );
+    const errorMessage = 'Edição de reserva não está disponível neste portal.';
+    toastService.apiError(errorMessage);
+    return Promise.reject(new Error(errorMessage));
   },
 
   cancelBooking: (req, data) =>

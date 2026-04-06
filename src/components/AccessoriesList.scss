@@ -1,5 +1,7 @@
 .accessories-list {
   width: 100%;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
 
   .list-header {
     display: grid;

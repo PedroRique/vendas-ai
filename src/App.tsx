@@ -6,6 +6,7 @@ import ReservasPage from "./components/ReservasPage";
 import AdminPage from "./components/AdminPage";
 import LoginForm from "./components/LoginForm";
 import LoadingScreen from "./components/LoadingScreen";
+import GlobalToast from "./components/GlobalToast";
 import { useAuth } from "./hooks/useAuth";
 import { ReservationProvider } from "./contexts/ReservationContext";
 
@@ -19,6 +20,7 @@ function App() {
 
   return (
     <div className="App">
+      <GlobalToast />
       <ReservationProvider>
         <Routes>
           {/* Rota de login */}

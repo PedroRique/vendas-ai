@@ -14,6 +14,7 @@ interface FormatBookingData {
       isMonthly?: boolean;
       vehicleGroupAcronym?: string;
       vehicleGroup?: string;
+      vehicleCode?: string;
       rateQualifier?: string;
       availabilityToken?: string;
       [key: string]: unknown;
@@ -70,6 +71,11 @@ export function formatBooking(data: FormatBookingData, isQuotation: boolean = fa
   const dddCelular = telClean.length >= 2 ? telClean.substring(0, 2) : '';
   const celular = telClean.length >= 2 ? telClean.substring(2) : telClean;
 
+  // Separar nome completo em primeiro nome e sobrenome
+  const nameParts = data.personal.name.trim().split(/\s+/);
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || firstName;
+
   const booking: BookingRequest | QuotationRequest = {
     dataHoraDevolucao: data.selectedCar.rentalSearch.returnDateTime,
     dataHoraRetirada: data.selectedCar.rentalSearch.pickupDateTime,
@@ -78,9 +84,9 @@ export function formatBooking(data: FormatBookingData, isQuotation: boolean = fa
     ehMensal: data.selectedCar.vehicleData.isMonthly,
     dadosCliente: {
       email: data.personal.email,
-      prefixoNome: data.personal.name.substring(0, 1),
-      nome: data.personal.name,
-      sobrenome: data.personal.name,
+      prefixoNome: firstName.substring(0, 1),
+      nome: firstName,
+      sobrenome: lastName,
       dddTelefone: '',
       telefone: '',
       dddCelular: dddCelular,
@@ -90,6 +96,7 @@ export function formatBooking(data: FormatBookingData, isQuotation: boolean = fa
     },
     codigoAcriss: data.selectedCar.vehicleData.vehicleGroupAcronym,
     categoria: data.selectedCar.vehicleData.vehicleGroup,
+    vehicleCode: data.selectedCar.vehicleData.vehicleCode,
     opcionais: data.accessories || [],
     protecoes: data.protection || [],
     codigoPromocional: data.localization.codCupom,

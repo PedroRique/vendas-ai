@@ -60,7 +60,7 @@ const FinalizationPage: React.FC<FinalizationPageProps> = ({
   const reservationNumber = booking.codigoReservaAgencia || booking.codigoReserva || '';
 
   return (
-    <div className="finalization-page sidebar-container">
+    <div className="finalization-page">
       <Toast ref={toast} />
       <div className="finalization-container">
         <div className="order-info">

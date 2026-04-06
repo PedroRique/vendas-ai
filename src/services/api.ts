@@ -3,6 +3,7 @@ import { tenant } from '../tenant';
 import { authService } from './auth';
 import { getAvailabilityTransport } from './availabilityTransport';
 import { getBookingTransport } from './bookingTransport';
+import { toastService } from './toastService';
 
 // ==================== TIPOS DE AUTENTICAÇÃO ====================
 
@@ -382,6 +383,7 @@ export interface QuotationRequest {
   };
   codigoAcriss?: string;
   categoria?: string;
+  vehicleCode?: string;
   opcionais?: Array<Record<string, unknown>>;
   protecoes?: Array<Record<string, unknown>>;
   codigoPromocional?: string;
@@ -650,11 +652,24 @@ class ApiService {
         const error = new Error(errorMessage);
         if (apiErrors) {
           (error as Error & { apiErrors: ApiError[] }).apiErrors = apiErrors;
+          // Mostrar erro no Toast com código se disponível
+          const errorCode = apiErrors[0]?.code;
+          toastService.apiError(errorMessage, errorCode);
+        } else {
+          toastService.apiError(errorMessage);
         }
         throw error;
       }
 
       const data = await response.json();
+      
+      // Verificar se a resposta contém erros mesmo com status 200
+      if (data && data.error && data.error.message) {
+        const errorCode = data.error.code;
+        const errorMessage = data.error.message;
+        toastService.apiError(errorMessage, errorCode);
+      }
+      
       return data;
     } catch (error) {
       console.error('API request failed:', error);
@@ -805,16 +820,29 @@ class ApiService {
 
         // Para outros erros, criar mensagem de erro
         let errorMessage = `Erro ${response.status}`;
-        if (responseData.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+        let errorCode: string | undefined;
+        
+        // Verificar se há erro como string na resposta
+        if (responseData.error && typeof responseData.error === 'string') {
+          errorMessage = responseData.error;
+        } else if (responseData.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
           const firstError = responseData.errors[0];
           errorMessage = firstError.message || errorMessage;
+          errorCode = firstError.code;
         }
+        
+        toastService.apiError(errorMessage, errorCode);
         
         const error = new Error(errorMessage);
         if (responseData.errors) {
           (error as Error & { apiErrors: ApiError[] }).apiErrors = responseData.errors;
         }
         throw error;
+      }
+
+      // Verificar se há erro como string na resposta (mesmo com status 200)
+      if (responseData.error && typeof responseData.error === 'string') {
+        toastService.apiError(responseData.error);
       }
 
       // Se tudo OK, retornar os dados normalmente
@@ -1220,9 +1248,9 @@ class ApiService {
       document: data.dadosCliente.documento,
     };
 
-    // Extrair vehicleCode e vehicleGroup do selectedCar ou usar valores padrão
-    const vehicleCode = (data as unknown as { vehicleCode?: string }).vehicleCode || '';
-    const vehicleGroup = data.categoria || '';
+    // vehicleCode vem da disponibilidade, vehicleGroup deve ser o vehicleGroupAcronym
+    const vehicleCode = data.vehicleCode || '';
+    const vehicleGroup = data.codigoAcriss || '';
 
     const bookingRequest: BookingRequest = {
       rentalCompanyId,

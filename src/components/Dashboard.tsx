@@ -10,6 +10,7 @@ import { formatBooking } from "../utils/formatBooking";
 import type { Accessory } from "./AccessoriesPage";
 import AccessoriesPage from "./AccessoriesPage";
 import AvailableCarsPage from "./AvailableCarsPage";
+import BookingLoadingOverlay from "./BookingLoadingOverlay";
 import "./Dashboard.scss";
 import FinalizationPage from "./FinalizationPage";
 import LocalizationForm from "./LocalizationForm";
@@ -69,6 +70,7 @@ const Dashboard: React.FC = () => {
   const [protocolo, setProtocolo] = useState<string | null>(null);
   const [isInitializingAttendance, setIsInitializingAttendance] =
     useState(false);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
 
   const agencyCode =
     (user && "id_carrental" in user ? (user.id_carrental as number) : 100) ||
@@ -225,6 +227,7 @@ const Dashboard: React.FC = () => {
 
     // Salvar dados pessoais e fazer booking
     if (selectedCar && localizationData && protocolo) {
+      setIsBookingLoading(true);
       try {
         // Construir rentalSearch com os dados necessários
         const locData = localizationData.localization as Record<
@@ -277,6 +280,8 @@ const Dashboard: React.FC = () => {
       } catch (error: unknown) {
         console.error("Erro ao finalizar reserva:", error);
         // Não navegar para finalização em caso de erro
+      } finally {
+        setIsBookingLoading(false);
       }
     }
   };
@@ -300,6 +305,7 @@ const Dashboard: React.FC = () => {
   const handleQuotationSuccess = async () => {
     // Quando clica em "Finalizar" na cotação
     if (selectedCar && localizationData && personalData && protocolo) {
+      setIsBookingLoading(true);
       try {
         // Construir rentalSearch com os dados necessários
         const locData = localizationData.localization as Record<
@@ -351,6 +357,8 @@ const Dashboard: React.FC = () => {
         setCurrentStepIndex(5);
       } catch (error: unknown) {
         console.error("Erro ao finalizar reserva:", error);
+      } finally {
+        setIsBookingLoading(false);
       }
     }
   };
@@ -477,6 +485,7 @@ const Dashboard: React.FC = () => {
             handlePersonalDataQuotation(data, isNewCustomer)
           }
           onAbort={handlePersonalDataAbort}
+          isBookingLoading={isBookingLoading}
         />
       </div>
     );
@@ -595,6 +604,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
+      <BookingLoadingOverlay visible={isBookingLoading} />
       <div className="dashboard-content">{renderDashboardContent()}</div>
     </div>
   );

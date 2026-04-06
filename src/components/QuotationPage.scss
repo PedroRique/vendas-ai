@@ -1,16 +1,13 @@
 .quotation-page {
-  &.sidebar-container {
-    margin-right: 482px;
-
-    &.-with-quotation-sidebar {
-      margin-right: 482px;
-    }
-  }
+  display: flex;
+  flex: 1;
+  gap: 2rem;
   padding: 2rem;
 
   .quotation-card {
-    max-width: 1200px;
-    margin: 0 auto;
+    flex: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 
     .quotation-header {
       text-align: center;

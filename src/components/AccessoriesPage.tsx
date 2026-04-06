@@ -108,7 +108,7 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
   };
 
   return (
-    <div className="accessories-page sidebar-container">
+    <div className="accessories-page">
       <Toast ref={toast} />
       <Card className="accessories-card">
         <div className="accessories-header">
