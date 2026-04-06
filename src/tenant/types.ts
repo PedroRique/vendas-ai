@@ -12,6 +12,8 @@ export interface TenantConfig {
   branding: {
     logoSrc: string;
     logoAlt: string;
+    faviconPath: string;
+    pageTitle: string;
   };
   features: {
     multiRentalCompany: boolean;

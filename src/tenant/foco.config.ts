@@ -6,6 +6,8 @@ export const focoConfig: TenantConfig = {
   branding: {
     logoSrc,
     logoAlt: 'Foco',
+    faviconPath: '/favicon-foco.ico',
+    pageTitle: 'Foco - Vendas',
   },
   features: {
     multiRentalCompany: false,

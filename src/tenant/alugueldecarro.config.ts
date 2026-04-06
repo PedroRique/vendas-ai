@@ -6,6 +6,8 @@ export const alugueldecarroConfig: TenantConfig = {
   branding: {
     logoSrc,
     logoAlt: 'Aluguel de Carro AI',
+    faviconPath: '/favicon.ico',
+    pageTitle: 'Aluguel de Carro - Vendas',
   },
   features: {
     multiRentalCompany: true,
