@@ -3555,7 +3555,7 @@ Response Body sucesso (exemplo):
 Detalhes da reserva:
 (Apenas usuários autenticados)
 Busca na locadora, através do código da reserva, as informações da reserva.
-Endpoint: /foco-rac/bookingDetails/${bookingCode} (GET)
+Endpoint: /bookingDetails/${bookingCode} (GET)
 
 Response Body sucesso (exemplo):
 ``` json
@@ -3596,7 +3596,7 @@ Response Body sucesso (exemplo):
 Cancelar Reserva
 (Apenas usuários autenticados)
 Realiza o cancelamento da reserva.
-Endpoint: /foco-rac/cancel/${bookingCode} (POST)
+Endpoint: /cancel/${bookingCode} (POST)
 Request Body (exemplo):
 ```json
 {

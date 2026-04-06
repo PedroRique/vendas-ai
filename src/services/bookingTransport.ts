@@ -222,7 +222,7 @@ const focoBookingTransport: BookingTransport = {
 
   getBookingDetails: async (req, _rentalCompanyId, bookingCode) => {
     const raw = await req<FocoBookingDetailsRaw>(
-      `foco-rac/bookingDetails/${encodeURIComponent(bookingCode)}`,
+      `bookingDetails/${encodeURIComponent(bookingCode)}`,
       { method: 'GET' }
     );
     if (raw.error) {
@@ -241,7 +241,7 @@ const focoBookingTransport: BookingTransport = {
 
   cancelBooking: (req, data) =>
     req<CancelBookingResponse>(
-      `foco-rac/cancel/${encodeURIComponent(data.bookingCode)}`,
+      `cancel/${encodeURIComponent(data.bookingCode)}`,
       {
         method: 'POST',
         body: JSON.stringify({
