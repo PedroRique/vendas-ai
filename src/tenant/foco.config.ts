@@ -1,4 +1,4 @@
-import logoSrc from '../assets/foco-logo.svg';
+import logoSrc from '../assets/foco-vermelho.png';
 import type { TenantConfig } from './types';
 
 export const focoConfig: TenantConfig = {
