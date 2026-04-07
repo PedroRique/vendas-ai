@@ -4,6 +4,7 @@ import type { Car } from '../hooks/useCarFilters';
 import type { Accessory } from './AccessoriesPage';
 import type { Protection } from './ProtectionsPage';
 import type { PersonalData } from './PersonalDataPage';
+import { buildSidebarCopyText, copyTextToClipboard } from '../utils/sidebarCopy';
 import './Sidebar.scss';
 
 interface LocalizationData {
@@ -107,40 +108,37 @@ const Sidebar: React.FC<SidebarProps> = ({
     return valorBaseVeiculo + somaAcessorios + somaProtecoes;
   }, [valorBaseVeiculo, accessories, protections]);
 
-  // Copiar dados da sidebar
-  const handleCopyData = () => {
-    const sidebarElement = document.querySelector('.sidebar');
-    if (sidebarElement) {
-      const texto = sidebarElement.textContent || '';
-      
-      navigator.clipboard.writeText(texto).then(() => {
-        toast.current?.show({
-          severity: 'success',
-          summary: 'Copiado',
-          detail: 'Copiado para área de transferência.',
-        });
-      }).catch(() => {
-        // Fallback para navegadores mais antigos
-        const el = document.createElement('textarea');
-        el.value = texto;
-        el.style.position = 'fixed';
-        el.style.opacity = '0';
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-
-        toast.current?.show({
-          severity: 'success',
-          summary: 'Copiado',
-          detail: 'Copiado para área de transferência.',
-        });
-      });
-    }
-  };
-
   const quantidadeHoraExtra = car.numberOfOvertimeHours || 0;
   const percentualTaxaEventual = car.administrativeFeePercentage || 0;
+
+  const handleCopyData = () => {
+    const texto = buildSidebarCopyText({
+      personalData,
+      localizationData,
+      pickupLocationLabel,
+      returnLocationLabel,
+      car,
+      dailys,
+      valorDiariaPorUnidade,
+      valorTotalDiariasCalculado,
+      accessories,
+      protections,
+      quantidadeHoraExtra,
+      valorHoraExtraPorUnidade,
+      valorHoraExtraTotal,
+      valorTaxaDevolucao,
+      percentualTaxaEventual,
+      taxaAdministrativaValor,
+      totalRodape,
+    });
+    void copyTextToClipboard(texto).then(() => {
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Copiado',
+        detail: 'Copiado para área de transferência.',
+      });
+    });
+  };
 
   return (
     <aside className={`sidebar ${quotation ? '-quotation' : ''}`}>
