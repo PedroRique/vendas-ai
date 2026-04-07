@@ -33,8 +33,6 @@ const CarCard: React.FC<CarCardProps> = ({
     }).format(value);
   };
 
-  const dailyPrice = car.vehicleData.totalValue / car.vehicleData.numberOfDays;
-
   const handleCopy = () => {
     onCopy(car);
   };
@@ -150,7 +148,7 @@ const CarCard: React.FC<CarCardProps> = ({
 
         <div className={`car-price-section ${car.vehicleData.isMonthly ? 'monthly' : ''}`}>
           <p className="price-total">{formatCurrency(car.vehicleData.totalValue)}</p>
-          <p className="price-daily">{formatCurrency(dailyPrice)}/dia</p>
+          <p className="price-daily">{formatCurrency(car.vehicleData.dailyValue)}/dia</p>
           <span className="installment-info">ou até 10x no cartão</span>
           {isSelected ? (
             <Button
