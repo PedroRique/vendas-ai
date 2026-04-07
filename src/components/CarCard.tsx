@@ -11,8 +11,9 @@ interface CarCardProps {
   onSelect: (car: Car) => void;
   onCopy: (car: Car) => void;
   onViewDetails?: (car: Car) => void;
-  rentalType?: string;
   franchiseKm?: string;
+  pickupPlaceName?: string;
+  returnPlaceName?: string;
 }
 
 const CarCard: React.FC<CarCardProps> = ({
@@ -21,8 +22,9 @@ const CarCard: React.FC<CarCardProps> = ({
   onSelect,
   onCopy,
   onViewDetails,
-  rentalType: _rentalType,
   franchiseKm,
+  pickupPlaceName,
+  returnPlaceName,
 }) => {
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -42,6 +44,19 @@ const CarCard: React.FC<CarCardProps> = ({
       onSelect(car);
     }
   };
+
+  // Prioriza o nome do formulário (getCarPlace/retrievePlace) — mais amigável que o retorno da API
+  const pickupLocation =
+    pickupPlaceName?.trim() ||
+    car.rentalSearch.pickupStoreName ||
+    car.rentalSearch.pickupStoreCode ||
+    '--';
+
+  const returnLocation =
+    returnPlaceName?.trim() ||
+    car.rentalSearch.returnStoreName ||
+    car.rentalSearch.returnStoreCode ||
+    '--';
 
   const header = (
     <div className="car-card-header">
@@ -89,14 +104,14 @@ const CarCard: React.FC<CarCardProps> = ({
                 <p>
                   <strong>Local de retirada:</strong>
                   <br />
-                  {car.rentalSearch.pickupStoreName}
+                  {pickupLocation}
                 </p>
               </div>
               <div className="detail-row">
                 <p>
                   <strong>Local devolução:</strong>
                   <br />
-                  {car.rentalSearch.returnStoreName}
+                  {returnLocation}
                 </p>
               </div>
               <div className="detail-row">

@@ -31,8 +31,14 @@ interface LocalizationFormData {
     [key: string]: unknown;
   };
   rentalType: string;
-  getCarPlace: Record<string, unknown>;
-  retrievePlace: Record<string, unknown>;
+  getCarPlace: {
+    nome?: string;
+    [key: string]: unknown;
+  };
+  retrievePlace: {
+    nome?: string;
+    [key: string]: unknown;
+  };
 }
 
 interface PersonalData {
@@ -400,10 +406,11 @@ const Dashboard: React.FC = () => {
         <AvailableCarsPage
           availabilityData={localizationData.availability}
           localizationData={{
-            rentalType: localizationData.rentalType,
             franquiaKM: localizationData.localization.franquiaKM as
               | { codigo: string }
               | undefined,
+            pickupPlaceName: localizationData.getCarPlace?.nome || "",
+            returnPlaceName: localizationData.retrievePlace?.nome || "",
           }}
           onCarSelect={handleCarSelect}
           onAbort={handleCarsPageAbort}
@@ -427,6 +434,8 @@ const Dashboard: React.FC = () => {
           localizationData={{
             ...localizationData.localization,
             accessories,
+            pickupPlaceName: localizationData.getCarPlace?.nome ?? "",
+            returnPlaceName: localizationData.retrievePlace?.nome ?? "",
           }}
           onSuccess={handleAccessoriesSuccess}
           onAbort={handleAccessoriesAbort}
@@ -451,6 +460,8 @@ const Dashboard: React.FC = () => {
             ...localizationData.localization,
             accessories,
             protection: protections,
+            pickupPlaceName: localizationData.getCarPlace?.nome ?? "",
+            returnPlaceName: localizationData.retrievePlace?.nome ?? "",
           }}
           accessories={accessories}
           onSuccess={handleProtectionsSuccess}
@@ -477,6 +488,8 @@ const Dashboard: React.FC = () => {
             accessories,
             protection: protections,
             personal: personalData,
+            pickupPlaceName: localizationData.getCarPlace?.nome ?? "",
+            returnPlaceName: localizationData.retrievePlace?.nome ?? "",
           }}
           accessories={accessories}
           protections={protections}
@@ -514,6 +527,8 @@ const Dashboard: React.FC = () => {
             accessories,
             protection: protections,
             personal: personalData,
+            pickupPlaceName: localizationData.getCarPlace?.nome ?? "",
+            returnPlaceName: localizationData.retrievePlace?.nome ?? "",
           }}
           accessories={accessories}
           protections={protections}
@@ -550,6 +565,8 @@ const Dashboard: React.FC = () => {
           accessories={accessories}
           protections={protections}
           personalData={personalData!}
+          pickupPlaceName={localizationData?.getCarPlace?.nome ?? ""}
+          returnPlaceName={localizationData?.retrievePlace?.nome ?? ""}
           onAbort={handleFinalizationAbort}
           onRestart={handleFinalizationRestart}
         />

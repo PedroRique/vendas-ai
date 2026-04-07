@@ -21,8 +21,9 @@ interface AvailableCarsPageProps {
     [key: string]: unknown;
   };
   localizationData?: {
-    rentalType?: string;
     franquiaKM?: { codigo: string };
+    pickupPlaceName?: string;
+    returnPlaceName?: string;
     [key: string]: unknown;
   };
   onCarSelect: (car: Car) => void;
@@ -217,8 +218,9 @@ const AvailableCarsPage: React.FC<AvailableCarsPageProps> = ({
             onSelectCar={handleCarSelect}
             onCopyCar={handleCopyCar}
             onViewDetails={handleViewDetails}
-            rentalType={localizationData?.rentalType}
             franchiseKm={franchiseKm}
+            pickupPlaceName={localizationData?.pickupPlaceName}
+            returnPlaceName={localizationData?.returnPlaceName}
           />
         </main>
       </div>

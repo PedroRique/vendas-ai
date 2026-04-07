@@ -10,6 +10,8 @@ interface LocalizationData {
   dataHoraRetirada?: string;
   dataHoraDevolucao?: string;
   codCupom?: string;
+  pickupPlaceName?: string;
+  returnPlaceName?: string;
   franquiaKM?: {
     codigo?: string;
     [key: string]: unknown;
@@ -43,6 +45,17 @@ const Sidebar: React.FC<SidebarProps> = ({
   const car = selectedCar.vehicleData;
   const rentalSearch = selectedCar.rentalSearch;
   const dailys = car.numberOfDays || 0;
+
+  const pickupLocationLabel =
+    localizationData?.pickupPlaceName?.trim() ||
+    rentalSearch?.pickupStoreName ||
+    rentalSearch?.pickupStoreCode ||
+    '';
+  const returnLocationLabel =
+    localizationData?.returnPlaceName?.trim() ||
+    rentalSearch?.returnStoreName ||
+    rentalSearch?.returnStoreCode ||
+    '';
 
   // Formatar data e hora
   const formatDateTime = (dateTime?: string) => {
@@ -221,10 +234,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           </p>
         )}
 
-        {rentalSearch?.pickupStoreName && (
+        {pickupLocationLabel && (
           <p className="label">
             Local Retirada: <br />
-            <span className="value">{rentalSearch.pickupStoreName}</span>
+            <span className="value">{pickupLocationLabel}</span>
           </p>
         )}
 
@@ -235,10 +248,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           </p>
         )}
 
-        {rentalSearch?.returnStoreName && (
+        {returnLocationLabel && (
           <p className="label">
             Local Devolução: <br />
-            <span className="value">{rentalSearch.returnStoreName}</span>
+            <span className="value">{returnLocationLabel}</span>
           </p>
         )}
 

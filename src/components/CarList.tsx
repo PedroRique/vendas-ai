@@ -9,8 +9,9 @@ interface CarListProps {
   onSelectCar: (car: Car) => void;
   onCopyCar: (car: Car) => void;
   onViewDetails?: (car: Car) => void;
-  rentalType?: string;
   franchiseKm?: string;
+  pickupPlaceName?: string;
+  returnPlaceName?: string;
 }
 
 const CarList: React.FC<CarListProps> = ({
@@ -19,8 +20,9 @@ const CarList: React.FC<CarListProps> = ({
   onSelectCar,
   onCopyCar,
   onViewDetails,
-  rentalType,
   franchiseKm,
+  pickupPlaceName,
+  returnPlaceName,
 }) => {
   const formatCarData = (car: Car): string => {
     const formatCurrency = (value: number): string => {
@@ -120,8 +122,9 @@ const CarList: React.FC<CarListProps> = ({
             onSelect={onSelectCar}
             onCopy={handleCopy}
             onViewDetails={onViewDetails}
-            rentalType={rentalType}
             franchiseKm={franchiseKm}
+            pickupPlaceName={pickupPlaceName}
+            returnPlaceName={returnPlaceName}
           />
         ))}
       </div>

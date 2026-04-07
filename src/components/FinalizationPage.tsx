@@ -24,6 +24,8 @@ interface FinalizationPageProps {
   accessories: Accessory[];
   protections: Protection[];
   personalData: PersonalData;
+  pickupPlaceName?: string;
+  returnPlaceName?: string;
   onAbort?: () => void;
   onRestart?: () => void;
 }
@@ -34,6 +36,8 @@ const FinalizationPage: React.FC<FinalizationPageProps> = ({
   accessories,
   protections,
   personalData,
+  pickupPlaceName,
+  returnPlaceName,
   onAbort,
   onRestart,
 }) => {
@@ -112,7 +116,10 @@ const FinalizationPage: React.FC<FinalizationPageProps> = ({
 
       <Sidebar
         selectedCar={selectedCar}
-        localizationData={{}}
+        localizationData={{
+          pickupPlaceName,
+          returnPlaceName,
+        }}
         accessories={accessories}
         protections={protections}
         personalData={personalData}
