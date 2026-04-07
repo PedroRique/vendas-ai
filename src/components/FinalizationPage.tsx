@@ -12,6 +12,9 @@ import './FinalizationPage.scss';
 interface BookingData {
   codigoReservaAgencia?: string;
   codigoReserva?: string;
+  booking?: {
+    bookingCode?: string;
+  };
   [key: string]: unknown;
 }
 
@@ -57,7 +60,7 @@ const FinalizationPage: React.FC<FinalizationPageProps> = ({
     });
   };
 
-  const reservationNumber = booking.codigoReservaAgencia || booking.codigoReserva || '';
+  const reservationNumber = booking.codigoReservaAgencia || booking.codigoReserva || booking.booking?.bookingCode || '';
 
   return (
     <div className="finalization-page">
@@ -69,17 +72,16 @@ const FinalizationPage: React.FC<FinalizationPageProps> = ({
             
             {reservationNumber && (
               <div className="order-box">
-                <span className="desc">Número da reserva:</span>
-                <a 
-                  href="#" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleCopyReservation(reservationNumber);
-                  }}
-                  className="reservation-link"
-                >
+                <div className="reservation-code">
                   <span className="number">{reservationNumber}</span>
-                </a>
+                  <Button
+                    icon="pi pi-copy"
+                    className="p-button-text p-button-sm copy-button"
+                    onClick={() => handleCopyReservation(reservationNumber)}
+                    tooltip="Copiar código"
+                    tooltipOptions={{ position: 'top' }}
+                  />
+                </div>
               </div>
             )}
 

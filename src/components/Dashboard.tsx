@@ -543,6 +543,7 @@ const Dashboard: React.FC = () => {
             booking as unknown as {
               codigoReservaAgencia?: string;
               codigoReserva?: string;
+              booking?: { bookingCode?: string };
               [key: string]: unknown;
             }
           }
