@@ -1,16 +1,22 @@
 import React from 'react';
 import { InputNumber } from 'primereact/inputnumber';
 import type { Accessory } from './AccessoriesPage';
+import type { OptionalAddonData } from '../services/api';
+import { getAccessoryLineTotal } from '../utils/accessoryPricing';
 import './AccessoriesList.scss';
 
 interface AccessoriesListProps {
   accessories: Accessory[];
   onAccessoryChange: (accessory: Accessory, quantity: number) => void;
+  optionalAddonsData?: OptionalAddonData[];
+  rentalDays: number;
 }
 
 const AccessoriesList: React.FC<AccessoriesListProps> = ({
   accessories,
   onAccessoryChange,
+  optionalAddonsData,
+  rentalDays,
 }) => {
   const handleQuantityChange = (accessory: Accessory, value: number | null | undefined) => {
     const quantity = value ?? 0;
@@ -25,6 +31,7 @@ const AccessoriesList: React.FC<AccessoriesListProps> = ({
         <span className="header-col description">Descrição</span>
         <span className="header-col quantity">Quantidade</span>
         <span className="header-col daily">Diária</span>
+        <span className="header-col total">Total</span>
       </div>
 
       <div className="list-items">
@@ -55,6 +62,11 @@ const AccessoriesList: React.FC<AccessoriesListProps> = ({
             </div>
             <span className="item-col daily">
               R$ {accessory.valorDiaria.toFixed(2).replace('.', ',')}
+            </span>
+            <span className="item-col total">
+              {`R$ ${getAccessoryLineTotal(optionalAddonsData, rentalDays, accessory)
+                .toFixed(2)
+                .replace('.', ',')}`}
             </span>
           </div>
         ))}

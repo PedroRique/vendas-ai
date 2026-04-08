@@ -5,6 +5,7 @@ import type { Accessory } from './AccessoriesPage';
 import type { Protection } from './ProtectionsPage';
 import type { PersonalData } from './PersonalDataPage';
 import { buildSidebarCopyText, copyTextToClipboard } from '../utils/sidebarCopy';
+import { getAccessoryLineTotal } from '../utils/accessoryPricing';
 import './Sidebar.scss';
 
 interface LocalizationData {
@@ -87,15 +88,21 @@ const Sidebar: React.FC<SidebarProps> = ({
   const taxaAdministrativaValor = useMemo(() => {
     const pct = car.administrativeFeePercentage || 0;
     if (pct <= 0) return 0;
-    const somaAcessorios = accessories.reduce((s, a) => s + (a.valorTotal || 0), 0);
+    const somaAcessorios = accessories.reduce(
+      (s, a) => s + getAccessoryLineTotal(selectedCar.optionalAddonsData, dailys, a),
+      0
+    );
     const somaProtecoes = protections.reduce((s, p) => s + (p.valorTotal || 0), 0);
     const base = valorTotalDiariasCalculado + somaAcessorios + somaProtecoes;
+
     return (base * pct) / 100;
   }, [
     car.administrativeFeePercentage,
     valorTotalDiariasCalculado,
     accessories,
     protections,
+    selectedCar.optionalAddonsData,
+    dailys,
   ]);
 
   const valorHoraExtraTotal = car.totalOvertimeValue ?? 0;
@@ -103,10 +110,23 @@ const Sidebar: React.FC<SidebarProps> = ({
   const valorTaxaDevolucao = car.returnFeeValue ?? 0;
 
   const totalRodape = useMemo(() => {
-    const somaAcessorios = accessories.reduce((s, a) => s + (a.valorTotal || 0), 0);
+    const somaAcessorios = accessories.reduce(
+      (s, a) => s + getAccessoryLineTotal(selectedCar.optionalAddonsData, dailys, a),
+      0
+    );
     const somaProtecoes = protections.reduce((s, p) => s + (p.valorTotal || 0), 0);
-    return valorBaseVeiculo + somaAcessorios + somaProtecoes;
-  }, [valorBaseVeiculo, accessories, protections]);
+    return (
+      valorTotalDiariasCalculado + somaAcessorios + somaProtecoes + taxaAdministrativaValor + valorTaxaDevolucao
+    );
+  }, [
+    valorTotalDiariasCalculado,
+    accessories,
+    protections,
+    selectedCar.optionalAddonsData,
+    dailys,
+    taxaAdministrativaValor,
+    valorTaxaDevolucao,
+  ]);
 
   const quantidadeHoraExtra = car.numberOfOvertimeHours || 0;
   const percentualTaxaEventual = car.administrativeFeePercentage || 0;
@@ -118,6 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       pickupLocationLabel,
       returnLocationLabel,
       car,
+      optionalAddonsData: selectedCar.optionalAddonsData,
       dailys,
       valorDiariaPorUnidade,
       valorTotalDiariasCalculado,
@@ -243,7 +264,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                       : dailys)}x {acc.quantidade || 0} Qtd. {acc.nome}
                   </span>
                   <span className={`price ${acc.obrigatorio ? '-noSum' : ''}`}>
-                    {formatCurrency(acc.valorTotal || 0)}
+                    {formatCurrency(
+                      getAccessoryLineTotal(selectedCar.optionalAddonsData, dailys, acc)
+                    )}
                   </span>
                 </li>
               ))

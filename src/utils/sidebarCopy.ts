@@ -1,7 +1,8 @@
 import type { Accessory } from '../components/AccessoriesPage';
 import type { Protection } from '../components/ProtectionsPage';
 import type { PersonalData } from '../components/PersonalDataPage';
-import type { VehicleData } from '../services/api';
+import type { OptionalAddonData, VehicleData } from '../services/api';
+import { getAccessoryLineTotal } from './accessoryPricing';
 
 export interface SidebarLocalizationForCopy {
   dataHoraRetirada?: string;
@@ -16,6 +17,7 @@ export interface SidebarCopyInput {
   pickupLocationLabel: string;
   returnLocationLabel: string;
   car: VehicleData;
+  optionalAddonsData?: OptionalAddonData[];
   dailys: number;
   valorDiariaPorUnidade: number;
   valorTotalDiariasCalculado: number;
@@ -63,6 +65,7 @@ export function buildSidebarCopyText(input: SidebarCopyInput): string {
     pickupLocationLabel,
     returnLocationLabel,
     car,
+    optionalAddonsData,
     dailys,
     valorDiariaPorUnidade,
     valorTotalDiariasCalculado,
@@ -120,7 +123,9 @@ export function buildSidebarCopyText(input: SidebarCopyInput): string {
           ? acc.quantidadeMaximaDiariasSerCobrado || dailys
           : dailys;
       lines.push(
-        `  ${dailysToUse}x ${acc.quantidade || 0} Qtd. ${acc.nome} — ${formatCurrency(acc.valorTotal || 0)}`
+        `  ${dailysToUse}x ${acc.quantidade || 0} Qtd. ${acc.nome} — ${formatCurrency(
+          getAccessoryLineTotal(optionalAddonsData, dailys, acc)
+        )}`
       );
     });
   }

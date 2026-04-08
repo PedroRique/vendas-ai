@@ -5,6 +5,7 @@ import { Card } from 'primereact/card';
 import type { Car } from '../hooks/useCarFilters';
 import AccessoriesList from './AccessoriesList';
 import Sidebar from './Sidebar';
+import { getAccessoryLineTotal } from '../utils/accessoryPricing';
 import './AccessoriesPage.scss';
 
 export interface Accessory {
@@ -57,16 +58,17 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
   }, [selectedCar.optionalAddonsData, selectedAccessories]);
 
   const handleAccessoryChange = (accessory: Accessory, quantity: number) => {
-    // Calcular valor total baseado na quantidade e valor diária
-    // Se há limite de diárias para cobrança, usar o mínimo entre quantidade e limite
-    const maxDiarias = accessory.quantidadeMaximaDiariasSerCobrado;
-    const diarias = maxDiarias ? Math.min(quantity, maxDiarias) : quantity;
-    const valorTotal = accessory.valorDiaria * diarias;
+    const rentalDays = selectedCar.vehicleData.numberOfDays ?? 0;
+    const valorTotal = getAccessoryLineTotal(
+      selectedCar.optionalAddonsData,
+      rentalDays,
+      { ...accessory, quantidade: quantity }
+    );
 
     const updated: Accessory = {
       ...accessory,
       quantidade: quantity,
-      valorTotal: valorTotal,
+      valorTotal,
       selected: quantity > 0,
     };
 
@@ -124,6 +126,8 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
             <AccessoriesList
               accessories={accessories}
               onAccessoryChange={handleAccessoryChange}
+              optionalAddonsData={selectedCar.optionalAddonsData}
+              rentalDays={selectedCar.vehicleData.numberOfDays ?? 0}
             />
           )}
 

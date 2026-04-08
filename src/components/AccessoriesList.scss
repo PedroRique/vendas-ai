@@ -5,7 +5,7 @@
 
   .list-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
     gap: 1rem;
     padding: 0.75rem 0;
     margin-bottom: 0.75rem;
@@ -20,7 +20,8 @@
       }
 
       &.quantity,
-      &.daily {
+      &.daily,
+      &.total {
         text-align: center;
       }
     }
@@ -33,7 +34,7 @@
 
     .list-item {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
       gap: 1rem;
       padding: 0.75rem 0;
       align-items: center;
@@ -71,6 +72,13 @@
           text-align: center;
           font-weight: 500;
           color: #666;
+          font-size: 0.9rem;
+        }
+
+        &.total {
+          text-align: center;
+          font-weight: 600;
+          color: var(--primary-color, #2196f3);
           font-size: 0.9rem;
         }
       }
