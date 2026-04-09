@@ -136,6 +136,24 @@ interface FocoBookingDetailsRaw {
   errors?: unknown[] | null;
 }
 
+/** CPF (11) ou CNPJ (14) com ou sem máscara → só dígitos para a API. Caso contrário, não é CPF/CNPJ. */
+function extractCpfCnpjDigitsIfApplicable(query: string): string | null {
+  const t = query.trim();
+  const digits = t.replace(/\D/g, '');
+  if (
+    (digits.length === 11 || digits.length === 14) &&
+    /^[\d.\s/-]+$/.test(t)
+  ) {
+    return digits;
+  }
+  return null;
+}
+
+interface FocoBookingsListResponse {
+  error?: string;
+  bookings?: FocoBookingDetailsRaw[];
+}
+
 function focoRawToDetails(raw: FocoBookingDetailsRaw): BookingDetailsResponse {
   return {
     status: raw.status || '',
@@ -165,6 +183,40 @@ function focoRawToDetails(raw: FocoBookingDetailsRaw): BookingDetailsResponse {
     },
     errors: (raw.errors as BookingDetailsResponse['errors']) ?? null,
   };
+}
+
+async function focoFetchBookingsByDocumentNumber(
+  req: ApiRequestFn,
+  rentalCompanyId: number,
+  documentNumber: string
+): Promise<Booking[]> {
+  const rawList = await req<FocoBookingsListResponse>(
+    `bookings?documentNumber=${encodeURIComponent(documentNumber)}`,
+    { method: 'GET' }
+  );
+
+  if (rawList.error && String(rawList.error).trim()) {
+    const errorMessage =
+      typeof rawList.error === 'string'
+        ? rawList.error
+        : 'Erro ao buscar reservas.';
+    toastService.apiError(errorMessage);
+    throw new Error(errorMessage);
+  }
+
+  const list = rawList.bookings ?? [];
+  const out: Booking[] = [];
+  let i = 0;
+  for (const item of list) {
+    const rowError = item.error && String(item.error).trim();
+    if (rowError) continue;
+    if (!item.bookingCode) continue;
+    i += 1;
+    out.push(
+      mapBookingDetailsToBooking(focoRawToDetails(item), i, rentalCompanyId)
+    );
+  }
+  return out;
 }
 
 const aluguelBookingTransport: BookingTransport = {
@@ -255,15 +307,26 @@ const focoBookingTransport: BookingTransport = {
   listBookings: async (req, _agencyCode, query) => {
     const trimmed = query.trim();
     if (!trimmed) return [];
+    const rentalCompanyId = 4;
+
+    const cpfCnpjDigits = extractCpfCnpjDigitsIfApplicable(trimmed);
+    if (cpfCnpjDigits) {
+      return focoFetchBookingsByDocumentNumber(
+        req,
+        rentalCompanyId,
+        cpfCnpjDigits
+      );
+    }
+
     try {
       const details = await focoBookingTransport.getBookingDetails(
         req,
-        4,
+        rentalCompanyId,
         trimmed
       );
       if (details.errors && details.errors.length > 0) return [];
       if (!details.bookingCode) return [];
-      return [mapBookingDetailsToBooking(details, 1, 4)];
+      return [mapBookingDetailsToBooking(details, 1, rentalCompanyId)];
     } catch (e) {
       if (isNotFoundError(e)) return [];
       throw e;

@@ -20,8 +20,9 @@ export const focoConfig: TenantConfig = {
     },
   },
   copy: {
-    reservasSearchLabel: 'Código da reserva',
-    reservasSearchPlaceholder: 'Digite o código da reserva',
-    reservasSearchRequiredDetail: 'Por favor, digite o código da reserva.',
+    reservasSearchLabel: 'Código da reserva ou documento',
+    reservasSearchPlaceholder: 'Código da reserva ou CPF/CNPJ',
+    reservasSearchRequiredDetail:
+      'Por favor, digite o código da reserva ou o documento do cliente.',
   },
 };

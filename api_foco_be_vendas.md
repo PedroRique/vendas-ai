@@ -3638,3 +3638,339 @@ Response Body sucesso (exemplo):
   ]
 }
 ```
+
+
+
+Procurar Reserva por CPF/Passaporte/Documento
+(Apenas usuários autenticados)
+Procurar Reserva por CPF/Passaporte/Documento
+Endpoint: /bookings?documentNumber=${documentNumber}$ (GET)
+Response: (exemplo):
+
+```json
+{
+    "error": "",
+    "bookings": [
+        {
+            "sessionId": "Vendas",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1155949-25",
+            "pickupDateTime": "2026-04-09T10:00:00Z",
+            "returnDateTime": "2026-04-21T10:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "SDU10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "A"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 24 998597876",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "1360.26",
+            "coverage": {
+                "name": "Proteçao Basica",
+                "code": ""
+            }
+        },
+        {
+            "sessionId": "",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1155933-25",
+            "pickupDateTime": "2026-04-09T10:00:00Z",
+            "returnDateTime": "2026-04-15T10:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "SDU10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "A"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 24 998597876",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "757.48",
+            "coverage": {
+                "name": "Proteçao Basica",
+                "code": ""
+            }
+        },
+        {
+            "sessionId": "",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1155863-25",
+            "pickupDateTime": "2026-04-08T10:00:00Z",
+            "returnDateTime": "2026-04-10T10:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "SDU10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "A"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 21 9984282202",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "431.68",
+            "coverage": {
+                "name": "Proteçao Especial",
+                "code": "DFCVG"
+            }
+        },
+        {
+            "sessionId": "",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1150392-25",
+            "pickupDateTime": "2026-04-07T10:00:00Z",
+            "returnDateTime": "2026-04-08T10:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "SDU10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "A"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 24 998597876",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "168.22",
+            "coverage": {
+                "name": "Proteçao Basica",
+                "code": ""
+            }
+        },
+        {
+            "sessionId": "",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1137106-25",
+            "pickupDateTime": "2026-04-04T10:00:00Z",
+            "returnDateTime": "2026-04-07T10:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto do Galeão (GIG)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "GIG10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "F"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 21 9984282202",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "1657.54",
+            "coverage": {
+                "name": "Proteçao Especial",
+                "code": "DFCVG"
+            }
+        },
+        {
+            "sessionId": "",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1137100-25",
+            "pickupDateTime": "2026-04-04T10:00:00Z",
+            "returnDateTime": "2026-04-07T10:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto do Galeão (GIG)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "GIG10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "F"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 21 9984282202",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "1657.54",
+            "coverage": {
+                "name": "Proteçao Especial",
+                "code": "DFCVG"
+            }
+        },
+        {
+            "sessionId": "",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1048481-25",
+            "pickupDateTime": "2026-04-02T16:00:00Z",
+            "returnDateTime": "2026-04-03T16:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "SDU10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "A"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 21 9984282202",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "404.69",
+            "coverage": {
+                "name": "Proteçao Especial",
+                "code": "DFCVG"
+            }
+        },
+        {
+            "sessionId": "ZOSSDE33302STORNI_2026-03-02T18:56:37.935Z",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1048156-25",
+            "pickupDateTime": "2026-03-03T16:00:00Z",
+            "returnDateTime": "2026-03-04T16:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "SDU10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "D"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 21 9984282202",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "169.79",
+            "coverage": {
+                "name": "Proteçao Basica",
+                "code": ""
+            }
+        },
+        {
+            "sessionId": "",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1047974-25",
+            "pickupDateTime": "2026-03-03T16:00:00Z",
+            "returnDateTime": "2026-03-04T16:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "SDU10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "D"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 21 9984282202",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "169.79",
+            "coverage": {
+                "name": "Proteçao Basica",
+                "code": ""
+            }
+        },
+        {
+            "sessionId": "",
+            "error": "",
+            "status": "Cancelled",
+            "bookingCode": "R1047931-25",
+            "pickupDateTime": "2026-03-03T16:00:00Z",
+            "returnDateTime": "2026-03-04T16:00:00Z",
+            "pickupStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "returnStore": "Rio de Janeiro - Aeroporto de Santos Dumont (SDU)",
+            "pickupStoreCode": "SDU10",
+            "returnStoreCode": "SDU10",
+            "group": {
+                "name": "",
+                "code": "D"
+            },
+            "customer": {
+                "name": "Caio Storni",
+                "document": "17616790747",
+                "phoneNumber": "+55 21 9984282202",
+                "email": "caio.storni@gmail.com"
+            },
+            "kilometerCap": "",
+            "partner": {
+                "partner": "",
+                "code": ""
+            },
+            "totalValue": "169.79",
+            "coverage": {
+                "name": "Proteçao Basica",
+                "code": ""
+            }
+        }
+    ]
+}
+```
