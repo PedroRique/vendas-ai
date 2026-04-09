@@ -10,6 +10,7 @@ import './AccessoriesPage.scss';
 
 export interface Accessory {
   nome: string;
+  addonCode?: string;
   valorDiaria: number;
   valorTotal: number;
   quantidade?: number;
@@ -47,6 +48,7 @@ const AccessoriesPage: React.FC<AccessoriesPageProps> = ({
       );
       return {
         nome: addon.name,
+        addonCode: addon.addonCode,
         valorDiaria: addon.dailyValue,
         valorTotal: addon.totalValue,
         quantidadeMaxima: addon.maximumQuantity,

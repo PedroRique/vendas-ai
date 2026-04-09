@@ -398,6 +398,47 @@ export interface QuotationRequest {
   [key: string]: unknown;
 }
 
+/** API de booking espera a sigla (acronym) da cobertura principal; o app guarda em `sigla` / `codigoProtecao`. */
+function resolveBookingCoverageCode(
+  protecoes: QuotationRequest['protecoes']
+): string {
+  const p = protecoes?.[0] as
+    | { sigla?: string; codigoProtecao?: string; codigo?: string }
+    | undefined;
+  if (!p) return 'BAS';
+  const fromSigla = (p.sigla && String(p.sigla).trim()) || '';
+  if (fromSigla) return fromSigla;
+  const fromCode = (p.codigoProtecao && String(p.codigoProtecao).trim()) || '';
+  if (fromCode) return fromCode;
+  const legacy = (p.codigo && String(p.codigo).trim()) || '';
+  return legacy || 'BAS';
+}
+
+/** Cada unidade do adicional vira uma entrada em optionalAddonsCodes (ex.: 2 cadeirinhas → 2× o mesmo código). */
+function buildOptionalAddonsCodesFromOpcionais(
+  opcionais: QuotationRequest['opcionais']
+): string[] | undefined {
+  if (!opcionais?.length) return undefined;
+  const out: string[] = [];
+  for (const raw of opcionais) {
+    const o = raw as {
+      quantidade?: number;
+      addonCode?: string;
+      sigla?: string;
+      codigo?: string;
+    };
+    const code =
+      (o.addonCode && String(o.addonCode).trim()) ||
+      (o.sigla && String(o.sigla).trim()) ||
+      (o.codigo && String(o.codigo).trim()) ||
+      '';
+    const qty = Math.max(0, Math.floor(Number(o.quantidade) || 0));
+    if (!code || qty < 1) continue;
+    for (let i = 0; i < qty; i++) out.push(code);
+  }
+  return out.length > 0 ? out : undefined;
+}
+
 export interface BookingCoverage {
   isRequired: boolean;
   coverageType: string;
@@ -1252,6 +1293,9 @@ class ApiService {
     const vehicleCode = data.vehicleCode || '';
     const vehicleGroup = data.codigoAcriss || '';
 
+    const coverageCode = resolveBookingCoverageCode(data.protecoes);
+    const optionalAddonsCodes = buildOptionalAddonsCodesFromOpcionais(data.opcionais);
+
     const bookingRequest: BookingRequest = {
       rentalCompanyId,
       pickupDateTime: data.dataHoraRetirada,
@@ -1261,7 +1305,8 @@ class ApiService {
       customer,
       vehicleCode,
       vehicleGroup,
-      coverageCode: (data.protecoes?.[0] as { codigo?: string })?.codigo || 'BAS',
+      optionalAddonsCodes,
+      coverageCode,
       promotionalCode: data.codigoPromocional,
       rateQualifier: data.rateQualifier,
     };
